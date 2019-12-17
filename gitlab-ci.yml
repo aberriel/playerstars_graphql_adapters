@@ -1,0 +1,77 @@
+image: foodsby/python-pip-awscli:3.7
+
+stages:
+  - test
+  - publish
+
+.utf8-env:
+  variables:
+    LC_ALL: C.UTF-8
+    LANG: C.UTF-8
+
+.publish:
+  extends: .utf8-env
+  stage: publish
+  variables:
+    DEVPI_URL: $DEVPI_URL
+    DEVPI_USER: $DEVPI_USER
+    DEVPI_PASSWORD: $DEVPI_PASSWORD
+  script:
+    - make upload
+
+.test:
+  extends: .utf8-env
+  stage: test
+  script:
+    - make install_dev
+    - make tests
+  coverage: /\d+\%\s*$/
+
+test_dev:
+  extends: .test
+  environment:
+    name: dev
+  except:
+    - master
+    - tags
+
+test_stg:
+  extends: .test
+  environment:
+    name: stg
+  only:
+    - master
+
+test_prd:
+  extends: .test
+  environment:
+    name: prd
+  only:
+    - tags
+
+publish_dev:
+  extends: .publish
+  dependencies:
+    - test_dev
+  environment:
+    name: dev
+  only:
+    - develop
+
+publish_stg:
+  extends: .publish
+  dependencies:
+    - test_stg
+  environment:
+    name: stg
+  only:
+    - master
+
+publish_prd:
+  extends: .publish
+  dependencies:
+    - test_prd
+  environment:
+    name: prd
+  only:
+    - tags
