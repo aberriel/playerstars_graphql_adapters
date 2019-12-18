@@ -1,8 +1,9 @@
 requirements = [
-    'boto3==1.9.190',
     'playerstars_domain',
+    'boto3==1.9.190',
+    'appsync-client==0.0.13',
 ]
 
-setup_requeriments = []
+setup_requirements = []
 
-test_requeriments = ['pytest', ]
+test_requirements = ['pytest', ]
