@@ -1,77 +1,20 @@
-from appsyncclient import AppSyncClient
-from datetime import datetime
-from enum import Enum
 from playerstars_domain import BasicEntity
+from playerstars_graphql_adapters.graphql import (
+    Mutation,
+    MutationPrefix
+)
 
 import inspect
-import json
 import logging
 import marshmallow
 
 
-class MutationPrefix(Enum):
-    CREATE = 'create'
-    UPDATE = 'update'
-    DELETE = 'delete'
-
-
-class Mutation:
-    def __init__(self, mutation_name, attribute_description_list):
-        self.mutation_name = mutation_name
-        self.attribute_description_list = attribute_description_list
-
-    def mount_value_declaration_part(self, attribute_description_list):
-        response = '{\n'
-        for key, value in attribute_description_list.items():
-            if value['is_custom']:
-                response = response + '{0}: {1}\n'\
-                    .format(key,
-                            self.mount_value_declaration_part(value['value']))
-            else:
-                response = response + '{0}: "{1}"\n'.format(key, value['value'].strftime('%Y-%m-%dT%H:%M:%S') if isinstance(value['value'], datetime) else value['value'])
-        response = response + '}'
-        return response
-
-    def mount_attribute_list_part(self, attribute_description_list):
-        response = '{'
-        for key, value in attribute_description_list.items():
-            response = response + '\n{0}'.format(key)
-            if value['is_custom']:
-                response = response + self.mount_attribute_list_part(value['value'])
-        response = response + '}'
-        return response
-
-    def mount_query_mutation(self):
-        part_1 = self.mount_value_declaration_part(self.attribute_description_list)
-        part_2 = self.mount_attribute_list_part(self.attribute_description_list)
-        mutation_query = '''
-               mutation %s {
-                    %s (input: %s)
-                    %s
-               }
-          ''' % (self.mutation_name.capitalize(), self.mutation_name, part_1, part_2)
-        return mutation_query
-
-    def submit(self):
-        query = {'query': self.mount_query_mutation()}
-        appsyncclient = AppSyncClient(apiId='3l2u7ok2cjfwdclv5qz3zb5z54',
-                                      apiKey='da2-xqu7fukowrcilcwoxvcjsrfawm',
-                                      region='us-east-1')
-        query_json = json.dumps(query)
-        response = appsyncclient.execute(data=query_json, callback=None)
-        return response
-
-
-class BasicAdapter:
+class BasicGraphqlAdapter:
     def __init__(self, object_name,
                  create_mutation_name=None,
                  update_mutation_name=None,
                  delete_mutation_name=None,
                  logger=None):
-        """
-        Adapter para persistência de um entity usando o GraphQL
-        :param object_name: Nome do objeto para composição do nome das mutations e queries
-        """
         self.object_name = object_name
         self.create_mutation_name = \
             create_mutation_name or \
@@ -89,7 +32,8 @@ class BasicAdapter:
         return self._logger
 
     def get_object_attribute_list(self, entity):
-        attributes = inspect.getmembers(entity, lambda a:not(inspect.isroutine(a)))
+        attributes = inspect.getmembers(entity,
+                                        lambda a:not(inspect.isroutine(a)))
         fields_description = entity.Schema._declared_fields
         filtered_attributes = [a for a in attributes
                                if not(a[0].startswith('_'))
@@ -120,7 +64,8 @@ class BasicAdapter:
                 raise Exception('Field {0} is required'.format(item[0]))
             if isinstance(item_value, BasicEntity):
                 item_info['is_custom'] = True
-                item_info['value'] = self.get_object_attribute_list(item_value)
+                item_info['value'] = \
+                    self.get_object_attribute_list(item_value)
             else:
                 item_info['is_custom'] = False
                 item_info['value'] = item_value
@@ -146,7 +91,8 @@ class BasicAdapter:
         return default
 
     def create(self, object_to_save):
-        object_attribute_description_list = self.get_object_attribute_list(object_to_save)
+        object_attribute_description_list = \
+            self.get_object_attribute_list(object_to_save)
         mutation = Mutation(
             mutation_name=self.create_mutation_name,
             attribute_description_list=object_attribute_description_list)
@@ -154,7 +100,8 @@ class BasicAdapter:
         return self.search(mutation_response, 'entity_id')
 
     def update(self, object_to_save):
-        object_attribute_description_list = self.get_object_attribute_list(object_to_save)
+        object_attribute_description_list = \
+            self.get_object_attribute_list(object_to_save)
         mutation = Mutation(
             mutation_name=self.update_mutation_name,
             attribute_description_list=object_attribute_description_list)

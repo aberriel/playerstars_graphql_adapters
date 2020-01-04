@@ -1,7 +1,8 @@
 requirements = [
-    'playerstars_domain',
     'appsync-client==0.0.13',
-    'paho-mqtt==1.5.0'
+    'paho-mqtt==1.5.0',
+    'playerstars_domain',
+    'python-decouple==3.1'
 ]
 
 setup_requirements = []
