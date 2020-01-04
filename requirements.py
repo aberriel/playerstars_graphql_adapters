@@ -1,8 +1,7 @@
 requirements = [
-    'marshmallow==3.2.1',
     'playerstars_domain',
-    'boto3==1.9.190',
     'appsync-client==0.0.13',
+    'paho-mqtt==1.5.0'
 ]
 
 setup_requirements = []
