@@ -14,28 +14,28 @@ class BasicGraphqlAdapter:
                  api_key,
                  aws_region,
                  object_name,
-                 create_mutation_name=None,
-                 update_mutation_name=None,
-                 delete_mutation_name=None,
                  logger=None):
         self.api_id = api_id
         self.api_key = api_key
         self.aws_region = aws_region
         self.object_name = object_name
-        self.create_mutation_name = \
-            create_mutation_name or \
-            '{0}{1}'.format(MutationPrefix.CREATE.value, object_name)
-        self.update_mutation_name = \
-            update_mutation_name or \
-            '{0}{1}'.format(MutationPrefix.UPDATE.value, object_name)
-        self.delete_mutation_name = \
-            delete_mutation_name or \
-            '{0}{1}'.format(MutationPrefix.DELETE.value, object_name)
         self._logger = logger if logger else logging.getLogger(object_name)
 
     @property
     def logger(self):
         return self._logger
+
+    @property
+    def create_data_mutation(self):
+        return '{0}{1}'.format(MutationPrefix.CREATE.value, self.object_name)
+
+    @property
+    def update_data_mutation(self):
+        return '{0}{1}'.format(MutationPrefix.UPDATE.value, self.object_name)
+
+    @property
+    def delete_data_mutation(self):
+        return '{0}{1}'.format(MutationPrefix.DELETE.value, self.object_name)
 
     def get_object_attribute_list(self, entity):
         attributes = inspect.getmembers(entity,
@@ -96,23 +96,11 @@ class BasicGraphqlAdapter:
                 stack.pop()
         return default
 
-    def create(self, object_to_save):
+    def save(self, object_to_save, new_record=True):
         object_attribute_description_list = \
             self.get_object_attribute_list(object_to_save)
         mutation = Mutation(
-            mutation_name=self.create_mutation_name,
-            attribute_description_list=object_attribute_description_list,
-            api_id=self.api_id,
-            api_key=self.api_key,
-            aws_region=self.aws_region)
-        mutation_response = mutation.submit()
-        return self.search(mutation_response, 'entity_id')
-
-    def update(self, object_to_save):
-        object_attribute_description_list = \
-            self.get_object_attribute_list(object_to_save)
-        mutation = Mutation(
-            mutation_name=self.update_mutation_name,
+            mutation_name=self.create_data_mutation if new_record else self.update_data_mutation,
             attribute_description_list=object_attribute_description_list,
             api_id=self.api_id,
             api_key=self.api_key,
