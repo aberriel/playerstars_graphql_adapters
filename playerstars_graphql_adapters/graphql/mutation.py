@@ -1,6 +1,5 @@
 from appsyncclient import AppSyncClient
 from datetime import datetime
-from decouple import config
 from enum import Enum
 
 import json
@@ -13,9 +12,16 @@ class MutationPrefix(Enum):
 
 
 class Mutation:
-    def __init__(self, mutation_name, attribute_description_list):
+    def __init__(self, mutation_name,
+                 attribute_description_list,
+                 api_id,
+                 api_key,
+                 aws_region):
         self.mutation_name = mutation_name
         self.attribute_description_list = attribute_description_list
+        self.api_id = api_id
+        self.api_key = api_key
+        self.aws_region = aws_region
 
     def mount_value_declaration_part(self, attribute_description_list):
         response = '{\n'
@@ -61,9 +67,9 @@ class Mutation:
 
     def submit(self):
         query = {'query': self.mount_query_mutation()}
-        appsyncclient = AppSyncClient(apiId=config('API_ID'),
-                                      apiKey=config('API_KEY'),
-                                      region=config('AWS_REGION'))
+        appsyncclient = AppSyncClient(apiId=self.api_id,
+                                      apiKey=self.api_key,
+                                      region=self.aws_region)
         query_json = json.dumps(query)
         response = appsyncclient.execute(data=query_json, callback=None)
         return response

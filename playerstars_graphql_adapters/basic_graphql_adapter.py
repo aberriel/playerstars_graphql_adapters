@@ -10,11 +10,17 @@ import marshmallow
 
 
 class BasicGraphqlAdapter:
-    def __init__(self, object_name,
+    def __init__(self, api_id,
+                 api_key,
+                 aws_region,
+                 object_name,
                  create_mutation_name=None,
                  update_mutation_name=None,
                  delete_mutation_name=None,
                  logger=None):
+        self.api_id = api_id
+        self.api_key = api_key
+        self.aws_region = aws_region
         self.object_name = object_name
         self.create_mutation_name = \
             create_mutation_name or \
@@ -44,7 +50,7 @@ class BasicGraphqlAdapter:
         for item in filtered_attributes:
             item_type = type(item[1])
             if item_type == marshmallow.schema.SchemaMeta or \
-                    isinstance(item[1], BasicAdapter):
+                    isinstance(item[1], BasicGraphqlAdapter):
                 continue
             item_name = item[0]
             item_value = item[1]
@@ -95,7 +101,10 @@ class BasicGraphqlAdapter:
             self.get_object_attribute_list(object_to_save)
         mutation = Mutation(
             mutation_name=self.create_mutation_name,
-            attribute_description_list=object_attribute_description_list)
+            attribute_description_list=object_attribute_description_list,
+            api_id=self.api_id,
+            api_key=self.api_key,
+            aws_region=self.aws_region)
         mutation_response = mutation.submit()
         return self.search(mutation_response, 'entity_id')
 
@@ -104,7 +113,10 @@ class BasicGraphqlAdapter:
             self.get_object_attribute_list(object_to_save)
         mutation = Mutation(
             mutation_name=self.update_mutation_name,
-            attribute_description_list=object_attribute_description_list)
+            attribute_description_list=object_attribute_description_list,
+            api_id=self.api_id,
+            api_key=self.api_key,
+            aws_region=self.aws_region)
         mutation_response = mutation.submit()
         return self.search(mutation_response, 'entity_id')
 
