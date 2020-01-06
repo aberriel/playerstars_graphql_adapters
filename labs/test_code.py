@@ -18,9 +18,16 @@ class MutationPrefix(Enum):
 
 
 class Mutation:
-    def __init__(self, mutation_name, attribute_description_list):
+    def __init__(self, mutation_name,
+                 attribute_description_list,
+                 api_id,
+                 api_key,
+                 aws_region):
         self.mutation_name = mutation_name
         self.attribute_description_list = attribute_description_list
+        self.api_id = api_id
+        self.api_key = api_key
+        self.aws_region = aws_region
 
     def mount_value_declaration_part(self, attribute_description_list):
         response = '{\n'
@@ -30,7 +37,11 @@ class Mutation:
                     .format(key,
                             self.mount_value_declaration_part(value['value']))
             else:
-                response = response + '{0}: "{1}"\n'.format(key, value['value'].strftime('%Y-%m-%dT%H:%M:%S') if isinstance(value['value'], datetime) else value['value'])
+                response = response + '{0}: "{1}"\n'.format(
+                    key,
+                    value['value'].strftime('%Y-%m-%dT%H:%M:%S')
+                    if isinstance(value['value'], datetime)
+                    else value['value'])
         response = response + '}'
         return response
 
@@ -39,59 +50,68 @@ class Mutation:
         for key, value in attribute_description_list.items():
             response = response + '\n{0}'.format(key)
             if value['is_custom']:
-                response = response + self.mount_attribute_list_part(value['value'])
+                response = response + \
+                           self.mount_attribute_list_part(value['value'])
         response = response + '}'
         return response
 
     def mount_query_mutation(self):
-        part_1 = self.mount_value_declaration_part(self.attribute_description_list)
-        part_2 = self.mount_attribute_list_part(self.attribute_description_list)
+        part_1 = self.mount_value_declaration_part(
+            self.attribute_description_list)
+        part_2 = self.mount_attribute_list_part(
+            self.attribute_description_list)
         mutation_query = '''
                mutation %s {
                     %s (input: %s)
                     %s
                }
-          ''' % (self.mutation_name.capitalize(), self.mutation_name, part_1, part_2)
+          ''' % (self.mutation_name.capitalize(),
+                 self.mutation_name,
+                 part_1,
+                 part_2)
         return mutation_query
 
     def submit(self):
         query = {'query': self.mount_query_mutation()}
-        appsyncclient = AppSyncClient(apiId='3l2u7ok2cjfwdclv5qz3zb5z54',
-                                      apiKey='da2-xqu7fukowrcilcwoxvcjsrfawm',
-                                      region='us-east-1')
+        appsyncclient = AppSyncClient(apiId=self.api_id,
+                                      apiKey=self.api_key,
+                                      region=self.aws_region)
         query_json = json.dumps(query)
         response = appsyncclient.execute(data=query_json, callback=None)
         return response
 
 
-class BasicAdapter:
-    def __init__(self, object_name,
-                 create_mutation_name=None,
-                 update_mutation_name=None,
-                 delete_mutation_name=None,
+class BasicGraphqlAdapter:
+    def __init__(self, api_id,
+                 api_key,
+                 aws_region,
+                 object_name,
                  logger=None):
-        """
-        Adapter para persistência de um entity usando o GraphQL
-        :param object_name: Nome do objeto para composição do nome das mutations e queries
-        """
+        self.api_id = api_id
+        self.api_key = api_key
+        self.aws_region = aws_region
         self.object_name = object_name
-        self.create_mutation_name = \
-            create_mutation_name or \
-            '{0}{1}'.format(MutationPrefix.CREATE.value, object_name)
-        self.update_mutation_name = \
-            update_mutation_name or \
-            '{0}{1}'.format(MutationPrefix.UPDATE.value, object_name)
-        self.delete_mutation_name = \
-            delete_mutation_name or \
-            '{0}{1}'.format(MutationPrefix.DELETE.value, object_name)
         self._logger = logger if logger else logging.getLogger(object_name)
 
     @property
     def logger(self):
         return self._logger
 
+    @property
+    def create_data_mutation(self):
+        return '{0}{1}'.format(MutationPrefix.CREATE.value, self.object_name)
+
+    @property
+    def update_data_mutation(self):
+        return '{0}{1}'.format(MutationPrefix.UPDATE.value, self.object_name)
+
+    @property
+    def delete_data_mutation(self):
+        return '{0}{1}'.format(MutationPrefix.DELETE.value, self.object_name)
+
     def get_object_attribute_list(self, entity):
-        attributes = inspect.getmembers(entity, lambda a:not(inspect.isroutine(a)))
+        attributes = inspect.getmembers(entity,
+                                        lambda a:not(inspect.isroutine(a)))
         fields_description = entity.Schema._declared_fields
         filtered_attributes = [a for a in attributes
                                if not(a[0].startswith('_'))
@@ -102,7 +122,7 @@ class BasicAdapter:
         for item in filtered_attributes:
             item_type = type(item[1])
             if item_type == marshmallow.schema.SchemaMeta or \
-                    isinstance(item[1], BasicAdapter):
+                    isinstance(item[1], BasicGraphqlAdapter):
                 continue
             item_name = item[0]
             item_value = item[1]
@@ -122,7 +142,8 @@ class BasicAdapter:
                 raise Exception('Field {0} is required'.format(item[0]))
             if isinstance(item_value, BasicEntity):
                 item_info['is_custom'] = True
-                item_info['value'] = self.get_object_attribute_list(item_value)
+                item_info['value'] = \
+                    self.get_object_attribute_list(item_value)
             else:
                 item_info['is_custom'] = False
                 item_info['value'] = item_value
@@ -147,19 +168,15 @@ class BasicAdapter:
                 stack.pop()
         return default
 
-    def create(self, object_to_save):
-        object_attribute_description_list = self.get_object_attribute_list(object_to_save)
+    def save(self, object_to_save, new_record=True):
+        object_attribute_description_list = \
+            self.get_object_attribute_list(object_to_save)
         mutation = Mutation(
-            mutation_name=self.create_mutation_name,
-            attribute_description_list=object_attribute_description_list)
-        mutation_response = mutation.submit()
-        return self.search(mutation_response, 'entity_id')
-
-    def update(self, object_to_save):
-        object_attribute_description_list = self.get_object_attribute_list(object_to_save)
-        mutation = Mutation(
-            mutation_name=self.update_mutation_name,
-            attribute_description_list=object_attribute_description_list)
+            mutation_name=self.create_data_mutation if new_record else self.update_data_mutation,
+            attribute_description_list=object_attribute_description_list,
+            api_id=self.api_id,
+            api_key=self.api_key,
+            aws_region=self.aws_region)
         mutation_response = mutation.submit()
         return self.search(mutation_response, 'entity_id')
 
@@ -167,9 +184,16 @@ class BasicAdapter:
         raise NotImplementedError
 
 
-class NotificationAdapter(BasicAdapter):
-    def __init__(self, object_name='Notification'):
-        super(NotificationAdapter, self).__init__(object_name=object_name)
+class NotificationAdapter(BasicGraphqlAdapter):
+    def __init__(self, api_id,
+                 api_key,
+                 aws_region,
+                 object_name='Notification'):
+        super(NotificationAdapter, self).__init__(
+            api_id=api_id,
+            api_key=api_key,
+            aws_region=aws_region,
+            object_name=object_name)
 
 
 class EnumField(fields.Field):
@@ -194,25 +218,29 @@ class BasicEntity:
         self.entity_id = entity_id or str(uuid4())
         self.adapter = None
 
-    def __eq__(self, other):
-        return self.entity_id == other.entity_id
+    def set_adapter(self, adapter):
+        self.adapter = adapter
+
+    @classmethod
+    def from_json(cls, dict_data):
+        return cls.Schema().load(dict_data)
 
     def to_json(self):
         return self.Schema().dump(self)
 
-    def set_adapter(self, adapter):
-        self.adapter = adapter
-
     def save(self):
-        my_id = self.adapter.create(self)
+        my_id = self.adapter.save(self)
         return my_id
 
     def update(self):
-        my_id = self.adapter.create(self)
+        my_id = self.adapter.save(self)
         return my_id
 
     def delete(self):
         self.adapter.delete(self.entity_id)
+
+    def __eq__(self, other):
+        return self.entity_id == other.entity_id
 
     class Schema(Schema):
         entity_id = fields.String(required=True, allow_none=False)
@@ -295,6 +323,9 @@ class Notification(BasicEntity):
 
 
 notification = Notification(player_id='1317', notification_complement='Boa noite, chato!')
-adapter = NotificationAdapter()
+adapter = NotificationAdapter(
+    api_id='3l2u7ok2cjfwdclv5qz3zb5z54',
+    api_key='da2-xqu7fukowrcilcwoxvcjsrfawm',
+    aws_region='us-east-1')
 notification.set_adapter(adapter)
 notification.save()
