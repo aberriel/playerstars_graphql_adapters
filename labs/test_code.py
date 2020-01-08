@@ -171,6 +171,7 @@ class BasicGraphqlAdapter:
     def save(self, object_to_save, new_record=True):
         object_attribute_description_list = \
             self.get_object_attribute_list(object_to_save)
+        print(object_attribute_description_list)
         mutation = Mutation(
             mutation_name=self.create_data_mutation if new_record else self.update_data_mutation,
             attribute_description_list=object_attribute_description_list,
