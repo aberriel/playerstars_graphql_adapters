@@ -23,6 +23,13 @@ class Mutation:
         self.api_key = api_key
         self.aws_region = aws_region
 
+    def _process_item_value_for_mutation(self, item_value):
+        if isinstance(item_value, datetime):
+            return item_value.strftime('%Y-%m-%dT%H:%M:%S.%f')
+        elif isinstance(item_value, Enum):
+            return item_value.value
+        return item_value
+
     def mount_value_declaration_part(self, attribute_description_list):
         response = '{\n'
         for key, value in attribute_description_list.items():
@@ -33,9 +40,7 @@ class Mutation:
             else:
                 response = response + '{0}: "{1}"\n'.format(
                     key,
-                    value['value'].strftime('%Y-%m-%dT%H:%M:%S')
-                    if isinstance(value['value'], datetime)
-                    else value['value'])
+                    self._process_item_value_for_mutation(value['value']))
         response = response + '}'
         return response
 
