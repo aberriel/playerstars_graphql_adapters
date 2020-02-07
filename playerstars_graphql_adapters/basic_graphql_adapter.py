@@ -25,6 +25,15 @@ class BasicGraphqlAdapter:
     def logger(self):
         return self._logger
 
+    def list_all(self):
+        raise NotImplementedError
+
+    def get_by_id(self):
+        raise NotImplementedError
+
+    def filter(self, **kwargs):
+        raise NotImplementedError
+
     @property
     def create_data_mutation(self):
         return '{0}{1}'.format(MutationPrefix.CREATE.value, self.object_name)
@@ -96,11 +105,12 @@ class BasicGraphqlAdapter:
                 stack.pop()
         return default
 
-    def save(self, object_to_save, new_record=True):
+    def save(self, object_to_save, exec_update=False):
         object_attribute_description_list = \
             self.get_object_attribute_list(object_to_save)
         mutation = Mutation(
-            mutation_name=self.create_data_mutation if new_record else self.update_data_mutation,
+            mutation_name=self.create_data_mutation
+            if not exec_update else self.update_data_mutation,
             attribute_description_list=object_attribute_description_list,
             api_id=self.api_id,
             api_key=self.api_key,
@@ -110,3 +120,6 @@ class BasicGraphqlAdapter:
 
     def delete(self, entity_id):
         raise NotImplementedError
+
+    class GraphqlAdapterScanException(BaseException):
+        pass
