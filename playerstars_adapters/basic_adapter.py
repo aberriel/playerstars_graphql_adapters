@@ -1,5 +1,5 @@
 from playerstars_domain import BasicEntity
-from playerstars_graphql_adapters.graphql import (
+from playerstars_adapters.graphql import (
     Mutation,
     MutationPrefix
 )
@@ -28,7 +28,7 @@ class BasicGraphqlAdapter:
     def list_all(self):
         raise NotImplementedError
 
-    def get_by_id(self):
+    def get_by_id(self, item_id):
         raise NotImplementedError
 
     def filter(self, **kwargs):
@@ -36,6 +36,7 @@ class BasicGraphqlAdapter:
 
     @property
     def create_data_mutation(self):
+        print('self.object_name: ' + self.object_name)
         return '{0}{1}'.format(MutationPrefix.CREATE.value, self.object_name)
 
     @property
@@ -47,6 +48,7 @@ class BasicGraphqlAdapter:
         return '{0}{1}'.format(MutationPrefix.DELETE.value, self.object_name)
 
     def get_object_attribute_list(self, entity):
+        print('Entrei em get_object_attribute_list')
         attributes = inspect.getmembers(entity,
                                         lambda a:not(inspect.isroutine(a)))
         fields_description = entity.Schema._declared_fields
@@ -57,6 +59,7 @@ class BasicGraphqlAdapter:
                                        and a[0].endswith('__'))]
         result = dict()
         for item in filtered_attributes:
+            print('Vendo o ítem ' + str(item))
             item_type = type(item[1])
             if item_type == marshmallow.schema.SchemaMeta or \
                     isinstance(item[1], BasicGraphqlAdapter):

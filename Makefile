@@ -68,16 +68,16 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 tests:
-	@python3 -m pytest -s -vv --cov=tests --cov=playerstars_graphql_adapters -W ignore::DeprecationWarning --cov-report html --cov-report term-missing:skip-covered
+	@python3 -m pytest -s -vv --cov=tests --cov=playerstars_adapters -W ignore::DeprecationWarning --cov-report html --cov-report term-missing:skip-covered
 	@echo "Linting..."
-	@flake8 playerstars_graphql_adapters/ --max-complexity=5
+	@flake8 playerstars_adapters/ --max-complexity=5
 	@flake8 tests/ --ignore=S101,S311,F811
 	@echo "\033[32mTudo certo!"
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	rm -f docs/playerstars_graphql_adapters.rst
+	rm -f docs/playerstars_adapters.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ playerstars_graphql_adapters
+	sphinx-apidoc -o docs/ playerstars_adapters
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html
