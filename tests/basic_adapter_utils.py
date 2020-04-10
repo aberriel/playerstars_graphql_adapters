@@ -67,66 +67,9 @@ class Person(BasicEntity):
 
 
 class PersonAdapter(BasicGraphqlAdapter):
-    def __init__(self, api_id, api_key, aws_region, object_name):
+    def __init__(self, api_id, api_key, aws_region, object_name='Person'):
         super(PersonAdapter, self).__init__(
             api_id=api_id,
             api_key=api_key,
             aws_region=aws_region,
-            object_name='Test')
-
-
-app_sync_response_notification = {
-    'data': {
-        'createNotification': {
-            'creation_datetime': '2020-02-06T20:12:40.942472',
-            'entity_id': '1685f4b1-83c9-40c5-a7df-aacf29575ce3',
-            'notification_complement': 'Teste 7',
-            'notification_type': 'INFORMATIVE',
-            'player_id': '9b8c1e9c-a872-46f8-8c72-ed5677f0374c',
-            'status': 'CREATED'
-        }
-    }
-}
-
-
-app_sync_response_test_object = {
-    'data': {
-        'createTestObject': {
-            'entity_id': 'aqswde1',
-            'name': 'Anselmo',
-            'telephone': '99991-1519'
-        }
-    }
-}
-
-
-notification_data = Notification(
-    player_id='9b8c1e9c-a872-46f8-8c72-ed5677f0374c',
-    notification_complement='Teste 6')
-
-
-notification_data_with_id = Notification(
-    entity_id='1685f4b1-83c9-40c5-a7df-aacf29575ce3',
-    player_id='9b8c1e9c-a872-46f8-8c72-ed5677f0374c',
-    notification_complement='Teste 6')
-
-
-test_telephone = Telephone(
-    country_code='55',
-    local_code='21',
-    number='99991-1519')
-
-
-test_object_data = Person(
-    name='Anselmo',
-    telephone=test_telephone,
-    creation_datetime=datetime(2020, 2, 10, 15, 16, 17),
-    contact_type=ContactType.FRIEND)
-
-
-test_object_data_with_id = Person(
-    name='Anselmo',
-    telephone=test_telephone,
-    creation_datetime=datetime(2020, 2, 10, 15, 16, 17),
-    contact_type=ContactType.FRIEND,
-    entity_id='aqswde1')
+            object_name=object_name)
