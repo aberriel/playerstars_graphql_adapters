@@ -1,12 +1,15 @@
-from .basic_adapter_utils import (
+from tests.basic_adapter_utils import (
     ContactType,
     Person,
-    PersonAdapter,
     Telephone)
 from datetime import datetime
 from playerstars_adapters import (
     BasicGraphqlAdapter)
 from pytest import raises
+from unittest.mock import Mock, patch
+
+
+person_creation_datetime = datetime(2020, 4, 13, 15, 42, 6, 88967)
 
 
 def make_telephone_data(country_code: str = '55',
@@ -28,7 +31,8 @@ def make_person_data(name: str = 'Anselmo Lira',
         name=name,
         telephone=telephone_data,
         contact_type=contact_type,
-        comments=comments)
+        comments=comments,
+        creation_datetime=person_creation_datetime)
     return person_data
 
 
@@ -53,7 +57,7 @@ person_attribute_list = {
         'is_required': True,
         'allow_none': False,
         'is_custom': False,
-        'value': datetime(2020, 4, 13, 15, 42, 6, 88967)
+        'value': person_creation_datetime
     },
     'entity_id': {
         'name': 'entity_id',
@@ -61,7 +65,7 @@ person_attribute_list = {
         'is_required': True,
         'allow_none': False,
         'is_custom': False,
-        'value': '2b10ff93-be29-47b1-9849-62e174ffdb00'
+        'value': 'person123'
     },
     'name': {
         'name': 'name',
@@ -122,8 +126,7 @@ def test_create_data_mutation():
         api_key=api_key,
         aws_region=aws_region,
         object_name='Object')
-    create_mutation_name = basic_adapter.create_data_mutation()
-    assert create_mutation_name == 'createObject'
+    assert basic_adapter.create_data_mutation == 'createObject'
 
 
 def test_update_data_mutation():
@@ -132,8 +135,7 @@ def test_update_data_mutation():
         api_key=api_key,
         aws_region=aws_region,
         object_name='Object')
-    update_mutation_name = basic_adapter.update_data_mutation()
-    assert update_mutation_name == 'deleteObject'
+    assert basic_adapter.update_data_mutation == 'updateObject'
 
 
 def test_delete_data_mutation():
@@ -142,8 +144,7 @@ def test_delete_data_mutation():
         api_key=api_key,
         aws_region=aws_region,
         object_name='Object')
-    delete_mutation_name = basic_adapter.delete_data_mutation()
-    assert delete_mutation_name == 'deleteObject'
+    assert basic_adapter.delete_data_mutation == 'deleteObject'
 
 
 def test_search():
@@ -239,7 +240,9 @@ def test_get_attribute_list():
         api_key=api_key,
         aws_region=aws_region,
         object_name='Object')
+    person_data.set_adapter(basic_adapter)
     attribute_list = basic_adapter.get_object_attribute_list(person_data)
+
     assert attribute_list
     assert isinstance(attribute_list, dict)
     assert attribute_list == person_attribute_list

@@ -10,10 +10,10 @@ import marshmallow
 
 
 class BasicGraphqlAdapter:
-    def __init__(self, api_id,
-                 api_key,
-                 aws_region,
-                 object_name,
+    def __init__(self, api_id: str,
+                 api_key: str,
+                 aws_region: str,
+                 object_name: str,
                  logger=None):
         self.api_id = api_id
         self.api_key = api_key

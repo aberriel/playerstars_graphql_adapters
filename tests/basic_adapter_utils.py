@@ -4,9 +4,7 @@ from marshmallow import fields, post_load
 from playerstars_adapters import BasicGraphqlAdapter
 from playerstars_domain import (
     BasicEntity,
-    BasicValue,
-    Notification
-)
+    BasicValue)
 from playerstars_domain.utils.enum_field import EnumField
 
 
