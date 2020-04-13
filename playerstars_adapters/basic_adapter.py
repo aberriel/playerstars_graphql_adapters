@@ -1,4 +1,4 @@
-from playerstars_domain import BasicEntity
+from playerstars_domain import BasicEntity, BasicValue
 from playerstars_adapters.graphql import (
     Mutation,
     MutationPrefix
@@ -48,9 +48,8 @@ class BasicGraphqlAdapter:
         return '{0}{1}'.format(MutationPrefix.DELETE.value, self.object_name)
 
     def get_object_attribute_list(self, entity):
-        print('Entrei em get_object_attribute_list')
-        attributes = inspect.getmembers(entity,
-                                        lambda a:not(inspect.isroutine(a)))
+        print('BasicGraphqlAdapter.get_object_attribute_list -> Entrando')
+        attributes = inspect.getmembers(entity, lambda a:not(inspect.isroutine(a)))
         fields_description = entity.Schema._declared_fields
         filtered_attributes = [a for a in attributes
                                if not(a[0].startswith('_'))
@@ -59,36 +58,51 @@ class BasicGraphqlAdapter:
                                        and a[0].endswith('__'))]
         result = dict()
         for item in filtered_attributes:
-            print('Vendo o ítem ' + str(item))
             item_type = type(item[1])
-            if item_type == marshmallow.schema.SchemaMeta or \
-                    isinstance(item[1], BasicGraphqlAdapter):
-                continue
             item_name = item[0]
             item_value = item[1]
+
+            print('item: ' + str(item))
+            print('item_type: ' + str(item_type))
+
+            print('Verificando se o ítem é SchemaMeta')
+            if item_type == marshmallow.schema.SchemaMeta or \
+                    isinstance(item[1], BasicGraphqlAdapter):
+                print('item {0} is a SchemaMeta'.format(item_name))
+                continue
             default_value = fields_description[item[0]].default
 
+            print('Verificando se o ítem tem um valor default atribuído')
             if not item_value and \
                     (not isinstance(default_value, marshmallow.utils._Missing)
                      and default_value is not None):
                 item_value = default_value
+
+            print('Capturando informações sobre o item')
             item_info = dict()
             item_info['name'] = item_name
             item_info['type'] = item_type
             item_info['is_required'] = fields_description[item[0]].required
             item_info['allow_none'] = fields_description[item[0]].allow_none
+            print('Informações sobre o ítem capturadas')
 
             if fields_description[item_name].required and not item_value:
+                print('O ítem é obrigatório e não foi fornecido')
                 raise Exception('Field {0} is required'.format(item[0]))
-            if isinstance(item_value, BasicEntity):
+            print('Verificando se o ítem é um BasicEntity')
+            if isinstance(item_value, BasicEntity) or isinstance(item_value, BasicValue):
+                print('Attribute {0} is custom'.format(item_name))
                 item_info['is_custom'] = True
-                item_info['value'] = \
-                    self.get_object_attribute_list(item_value)
+                item_info['value'] = self.get_object_attribute_list(item_value)
             else:
+                print("Attribute {0} isn't custom".format(item_name))
                 item_info['is_custom'] = False
                 item_info['value'] = item_value
             if item_value:
                 result[item_name] = item_info
+        print('BasicGraphqlAdapter.get_object_attribute_list -> Object Attribute List: ')
+        print(result)
+        print('BasicGraphqlAdapter.get_object_attribute_list -> Saindo\n')
         return result
 
     def search(self, d, key, default=None):
@@ -103,7 +117,7 @@ class BasicGraphqlAdapter:
                     stack.append(iter(v.items()))
                     break
                 elif k == key:
-                    return v
+                    return v or default
             else:
                 stack.pop()
         return default
@@ -122,7 +136,7 @@ class BasicGraphqlAdapter:
         return self.search(mutation_response, 'entity_id')
 
     def delete(self, entity_id):
-        raise NotImplementedError
+        raise NotImplementedError('Not implemented yet')
 
     class GraphqlAdapterScanException(BaseException):
         pass

@@ -31,6 +31,10 @@ class Telephone(BasicValue):
         local_code = fields.String(required=True, allow_none=False)
         number = fields.String(required=True, allow_none=False)
 
+        @post_load
+        def post_load(self, data, many, partial, **kwargs):
+            return Telephone(**data)
+
 
 class Person(BasicEntity):
     def __init__(self,
@@ -38,11 +42,13 @@ class Person(BasicEntity):
                  telephone: Telephone,
                  creation_datetime: datetime = None,
                  contact_type: ContactType = ContactType.OTHER,
+                 comments: str = None,
                  entity_id: str = None):
         super(Person, self).__init__(entity_id=entity_id)
         self.name = name
         self.telephone = telephone
         self.contact_type = contact_type
+        self.comments = comments
         self.creation_datetime = creation_datetime or datetime.utcnow()
 
     class Schema(BasicEntity.Schema):
@@ -60,9 +66,10 @@ class Person(BasicEntity):
             required=True,
             allow_none=False,
             default=ContactType.OTHER)
+        comments = fields.String(required=False, allow_none=True)
 
         @post_load
-        def post_load(self, data, many, partial):
+        def post_load(self, data, many, partial, **kwargs):
             return Person(**data)
 
 
