@@ -1,4 +1,4 @@
-from playerstars_adapters import DuelAdapter
+from playerstars_graphql_adapters import DuelAdapter
 from tests.basic_adapter_utils import api_id, api_key, aws_region
 
 

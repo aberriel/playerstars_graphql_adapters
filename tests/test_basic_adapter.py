@@ -1,5 +1,5 @@
 from appsyncclient import AppSyncClient
-from playerstars_adapters import (
+from playerstars_graphql_adapters import (
     BasicGraphqlAdapter)
 from pytest import raises
 from tests.basic_adapter_utils import (

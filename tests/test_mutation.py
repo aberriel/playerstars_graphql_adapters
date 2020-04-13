@@ -1,4 +1,4 @@
-from playerstars_adapters.graphql.mutation import Mutation
+from playerstars_graphql_adapters.graphql.mutation import Mutation
 from tests.basic_adapter_utils import (
     api_id,
     api_key,

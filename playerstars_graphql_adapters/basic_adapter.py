@@ -1,5 +1,5 @@
 from playerstars_domain import BasicEntity, BasicValue
-from playerstars_adapters.graphql import (
+from playerstars_graphql_adapters.graphql import (
     Mutation,
     MutationPrefix)
 

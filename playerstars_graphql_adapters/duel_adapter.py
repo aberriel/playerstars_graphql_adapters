@@ -1,4 +1,4 @@
-from playerstars_adapters.basic_adapter import (
+from playerstars_graphql_adapters.basic_adapter import (
     BasicGraphqlAdapter)
 
 
