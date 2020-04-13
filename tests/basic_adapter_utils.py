@@ -36,8 +36,9 @@ class Telephone(BasicValue):
 
 class Person(BasicEntity):
     def __init__(self,
-                 name: str,
+                 name,
                  telephone: Telephone,
+                 address: str = None,
                  creation_datetime: datetime = None,
                  contact_type: ContactType = ContactType.OTHER,
                  comments: str = None,
@@ -45,6 +46,7 @@ class Person(BasicEntity):
         super(Person, self).__init__(entity_id=entity_id)
         self.name = name
         self.telephone = telephone
+        self.address = address
         self.contact_type = contact_type
         self.comments = comments
         self.creation_datetime = creation_datetime or datetime.utcnow()
@@ -64,6 +66,10 @@ class Person(BasicEntity):
             required=True,
             allow_none=False,
             default=ContactType.OTHER)
+        address = fields.String(
+            required=False,
+            allow_none=True,
+            default='default address')
         comments = fields.String(required=False, allow_none=True)
 
         @post_load
