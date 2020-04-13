@@ -208,7 +208,6 @@ def test_search_unknow_attribute_without_default():
     assert not search_result
 
 
-'''
 def test_save():
     basic_adapter = BasicGraphqlAdapter(
         api_id=api_id,
@@ -219,7 +218,6 @@ def test_save():
     person_data.set_adapter(basic_adapter)
 
     save_result = basic_adapter.save(person_data)
-'''
 
 
 def test_delete():
