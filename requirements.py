@@ -1,5 +1,5 @@
 requirements = [
-    'boto3==1.12.39',
+    'boto3==1.9.190',
     'appsync-client==0.0.13',
     'marshmallow==3.2.1',
     'paho-mqtt==1.5.0',
