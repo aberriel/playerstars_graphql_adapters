@@ -1,7 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from marshmallow import fields, post_load
-from playerstars_adapters import BasicGraphqlAdapter
+from marshmallow import fields
 from playerstars_domain import (
     BasicEntity,
     BasicValue)
@@ -28,10 +27,6 @@ class Telephone(BasicValue):
         country_code = fields.String(required=True, allow_none=False)
         local_code = fields.String(required=True, allow_none=False)
         number = fields.String(required=True, allow_none=False)
-
-        @post_load
-        def post_load(self, data, many, partial, **kwargs):
-            return Telephone(**data)
 
 
 class Person(BasicEntity):
@@ -72,15 +67,86 @@ class Person(BasicEntity):
             default='default address')
         comments = fields.String(required=False, allow_none=True)
 
-        @post_load
-        def post_load(self, data, many, partial, **kwargs):
-            return Person(**data)
+
+person_creation_datetime = datetime(2020, 4, 13, 15, 42, 6, 88967)
+api_url = 'api_url'
+api_id = 'api_id'
+api_key = 'api_key'
+aws_region = 'aws_region'
 
 
-class PersonAdapter(BasicGraphqlAdapter):
-    def __init__(self, api_id, api_key, aws_region, object_name='Person'):
-        super(PersonAdapter, self).__init__(
-            api_id=api_id,
-            api_key=api_key,
-            aws_region=aws_region,
-            object_name=object_name)
+person_attribute_list = {
+    'contact_type': {
+        'name': 'contact_type',
+        'type': ContactType,
+        'is_required': True,
+        'allow_none': False,
+        'is_custom': False,
+        'value': ContactType.CLIENT
+    },
+    'creation_datetime': {
+        'name': 'creation_datetime',
+        'type': datetime,
+        'is_required': True,
+        'allow_none': False,
+        'is_custom': False,
+        'value': person_creation_datetime
+    },
+    'entity_id': {
+        'name': 'entity_id',
+        'type': str,
+        'is_required': True,
+        'allow_none': False,
+        'is_custom': False,
+        'value': 'person123'
+    },
+    'name': {
+        'name': 'name',
+        'type': str,
+        'is_required': True,
+        'allow_none': False,
+        'is_custom': False,
+        'value': 'Anselmo Lira'
+    },
+    'address': {
+        'name': 'address',
+        'type': str,
+        'is_required': False,
+        'allow_none': True,
+        'is_custom': False,
+        'value': 'default address'
+    },
+    'telephone': {
+        'name': 'telephone',
+        'type': Telephone,
+        'is_required': False,
+        'allow_none': True,
+        'is_custom': True,
+        'value': {
+            'country_code': {
+                'name': 'country_code',
+                'type': str,
+                'is_required': True,
+                'allow_none': False,
+                'is_custom': False,
+                'value': '55'
+            },
+            'local_code': {
+                'name': 'local_code',
+                'type': str,
+                'is_required': True,
+                'allow_none': False,
+                'is_custom': False,
+                'value': '21'
+            },
+            'number': {
+                'name': 'number',
+                'type': str,
+                'is_required': True,
+                'allow_none': False,
+                'is_custom': False,
+                'value': '99144-1522'
+            }
+        }
+    }
+}

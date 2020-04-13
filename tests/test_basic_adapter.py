@@ -3,14 +3,16 @@ from playerstars_adapters import (
     BasicGraphqlAdapter)
 from pytest import raises
 from tests.basic_adapter_utils import (
+    api_id,
+    api_key,
+    aws_region,
     ContactType,
     Person,
+    person_attribute_list,
+    person_creation_datetime,
     Telephone)
 from datetime import datetime
 from unittest.mock import patch
-
-
-person_creation_datetime = datetime(2020, 4, 13, 15, 42, 6, 88967)
 
 
 def make_telephone_data(country_code: str = '55',
@@ -35,89 +37,6 @@ def make_person_data(name: str = 'Anselmo Lira',
         comments=comments,
         creation_datetime=person_creation_datetime)
     return person_data
-
-
-api_url = 'api_url'
-api_id = 'api_id'
-api_key = 'api_key'
-aws_region = 'aws_region'
-
-
-person_attribute_list = {
-    'contact_type': {
-        'name': 'contact_type',
-        'type': ContactType,
-        'is_required': True,
-        'allow_none': False,
-        'is_custom': False,
-        'value': ContactType.CLIENT
-    },
-    'creation_datetime': {
-        'name': 'creation_datetime',
-        'type': datetime,
-        'is_required': True,
-        'allow_none': False,
-        'is_custom': False,
-        'value': person_creation_datetime
-    },
-    'entity_id': {
-        'name': 'entity_id',
-        'type': str,
-        'is_required': True,
-        'allow_none': False,
-        'is_custom': False,
-        'value': 'person123'
-    },
-    'name': {
-        'name': 'name',
-        'type': str,
-        'is_required': True,
-        'allow_none': False,
-        'is_custom': False,
-        'value': 'Anselmo Lira'
-    },
-    'address': {
-        'name': 'address',
-        'type': str,
-        'is_required': False,
-        'allow_none': True,
-        'is_custom': False,
-        'value': 'default address'
-    },
-    'telephone': {
-        'name': 'telephone',
-        'type': Telephone,
-        'is_required': False,
-        'allow_none': True,
-        'is_custom': True,
-        'value': {
-            'country_code': {
-                'name': 'country_code',
-                'type': str,
-                'is_required': True,
-                'allow_none': False,
-                'is_custom': False,
-                'value': '55'
-            },
-            'local_code': {
-                'name': 'local_code',
-                'type': str,
-                'is_required': True,
-                'allow_none': False,
-                'is_custom': False,
-                'value': '21'
-            },
-            'number': {
-                'name': 'number',
-                'type': str,
-                'is_required': True,
-                'allow_none': False,
-                'is_custom': False,
-                'value': '99144-1522'
-            }
-        }
-    }
-}
 
 
 submit_mutation_response = {
@@ -267,7 +186,6 @@ def test_delete():
 
 
 def test_get_attribute_list():
-    print('\ntest_get_attribute_list -> Entrando')
     person_data = make_person_data()
     basic_adapter = BasicGraphqlAdapter(
         api_id=api_id,
