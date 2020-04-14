@@ -1,6 +1,8 @@
-from .basic_adapter import BasicGraphqlAdapter
+from .basic_adapter import (
+    BasicGraphqlAdapter,
+    Mutation,
+    MutationPrefix)
 from .duel_adapter import DuelAdapter
-from .graphql import Mutation, MutationPrefix
 from .notification_adapter import NotificationAdapter
 
 

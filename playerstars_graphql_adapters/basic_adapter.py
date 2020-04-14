@@ -1,11 +1,102 @@
+from appsyncclient import AppSyncClient
+from datetime import datetime
+from enum import Enum
 from playerstars_domain import BasicEntity, BasicValue
-from playerstars_graphql_adapters.graphql import (
-    Mutation,
-    MutationPrefix)
 
 import inspect
+import json
 import logging
 import marshmallow
+
+
+class MutationPrefix(Enum):
+    CREATE = 'create'
+    UPDATE = 'update'
+    DELETE = 'delete'
+
+
+class Mutation:
+    def __init__(self, mutation_name,
+                 attribute_description_list,
+                 api_id,
+                 api_key,
+                 aws_region,
+                 logger=None):
+        self.mutation_name = mutation_name
+        self.attribute_description_list = attribute_description_list
+        self.api_id = api_id
+        self.api_key = api_key
+        self.aws_region = aws_region
+        self._logger = logger if logger else logging.getLogger(__name__)
+
+    @property
+    def logger(self):
+        return self._logger
+
+    def _process_item_value_for_mutation(self, item_value):
+        if isinstance(item_value, datetime):
+            return item_value.strftime('%Y-%m-%dT%H:%M:%S.%f')
+        elif isinstance(item_value, Enum):
+            return item_value.value
+        return item_value
+
+    def mount_value_declaration_part(self, attribute_description_list):
+        self.logger.debug('Mounting value declaration part of mutation query')
+        response = '{\n'
+        for key, value in attribute_description_list.items():
+            if value['is_custom']:
+                response = response + '{0}: {1}\n'\
+                    .format(key,
+                            self.mount_value_declaration_part(value['value']))
+            else:
+                response = response + '{0}: "{1}"\n'.format(
+                    key,
+                    self._process_item_value_for_mutation(value['value']))
+        response = response + '}'
+        self.logger.debug('Value declaration part of query: {0}'
+                          .format(response))
+        return response
+
+    def mount_attribute_list_part(self, attribute_description_list):
+        self.logger.debug('Mounting attribute list part of mutation query')
+        response = '{'
+        for key, value in attribute_description_list.items():
+            response = response + '\n{0}'.format(key)
+            if value['is_custom']:
+                response = response + \
+                           self.mount_attribute_list_part(value['value'])
+        response = response + '}'
+        self.logger.debug('Attribute list part of query: {0}'.format(response))
+        return response
+
+    def mount_query_mutation(self):
+        self.logger.debug('Mounting query')
+        part_1 = self.mount_value_declaration_part(
+            self.attribute_description_list)
+        part_2 = self.mount_attribute_list_part(
+            self.attribute_description_list)
+        mutation_query = '''
+               mutation %s {
+                    %s (input: %s)
+                    %s
+               }
+          ''' % (self.mutation_name.capitalize(),
+                 self.mutation_name,
+                 part_1,
+                 part_2)
+        self.logger.info('Mutation query: {0}'.format(mutation_query))
+        return mutation_query
+
+    def submit(self):
+        query = {'query': self.mount_query_mutation()}
+        appsyncclient = AppSyncClient(apiId=self.api_id,
+                                      apiKey=self.api_key,
+                                      region=self.aws_region)
+        query_json = json.dumps(query)
+        self.logger.info('Executing mutation')
+        response = appsyncclient.execute(data=query_json, callback=None)
+        self.logger.info('Mutation execution response: ' + str(response))
+        return response
 
 
 class BasicGraphqlAdapter:
@@ -85,57 +176,6 @@ class BasicGraphqlAdapter:
             item_info['value'] = item_value
 
         return item_info, item_value
-
-    '''
-    def get_object_attribute_list(self, entity):
-        self.logger.info('Mount entity attribute list')
-        attributes = inspect.getmembers(entity,
-                                        lambda a: not(inspect.isroutine(a)))
-        fields_description = entity.Schema._declared_fields
-        filtered_attributes = [a for a in attributes
-                               if not(a[0].startswith('_'))
-                               and not(a[0].endswith('_'))
-                               and not(a[0].startswith('__')
-                                       and a[0].endswith('__'))]
-        result = dict()
-        for item in filtered_attributes:
-            item_type = type(item[1])
-            item_name = item[0]
-            item_value = item[1]
-
-            if item_type == marshmallow.schema.SchemaMeta or \
-                    isinstance(item[1], BasicGraphqlAdapter):
-                continue
-            default_value = fields_description[item[0]].default
-
-            if not item_value and \
-                    (not isinstance(default_value, marshmallow.utils._Missing)
-                     and default_value is not None):
-                item_value = default_value
-
-            item_info = dict()
-            item_info['name'] = item_name
-            item_info['type'] = item_type
-            item_info['is_required'] = fields_description[item[0]].required
-            item_info['allow_none'] = fields_description[item[0]].allow_none
-
-            if fields_description[item_name].required and not item_value:
-                raise Exception('Field {0} is required'.format(item[0]))
-
-            if isinstance(item_value, BasicEntity) or isinstance(item_value,
-                                                                 BasicValue):
-                item_info['is_custom'] = True
-                item_info['value'] = self.get_object_attribute_list(
-                    item_value)
-            else:
-                item_info['is_custom'] = False
-                item_info['value'] = item_value
-
-            if item_value:
-                result[item_name] = item_info
-
-        return result
-    '''
 
     def get_object_attribute_list(self, entity):
         self.logger.info('Mount entity attribute list')
