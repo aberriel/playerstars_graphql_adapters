@@ -38,20 +38,28 @@ class Mutation:
             return item_value.strftime('%Y-%m-%dT%H:%M:%S.%f')
         elif isinstance(item_value, Enum):
             return item_value.value
+        elif isinstance(item_value, bool):
+            return 'true' if item_value else 'false'
         return item_value
+
+    def get_mutation_item_value(self, item_key, item_value):
+        if item_value['type'] == bool:
+            return '{0}: {1}'.format(item_key, self._process_item_value_for_mutation(item_value['value']))
+        if item_value['type'] == int:
+            return '{0}: {1}'.format(item_key, str(item_value['value']))
+        return '{0}: "{1}"'.format(item_key, self._process_item_value_for_mutation(item_value['value']))
 
     def mount_value_declaration_part(self, attribute_description_list):
         self.logger.debug('Mounting value declaration part of mutation query')
         response = '{\n'
         for key, value in attribute_description_list.items():
             if value['is_custom']:
-                response = response + '{0}: {1}\n'\
+                response = response + '{0}: {1}\n' \
                     .format(key,
                             self.mount_value_declaration_part(value['value']))
             else:
-                response = response + '{0}: "{1}"\n'.format(
-                    key,
-                    self._process_item_value_for_mutation(value['value']))
+                response = response + self.get_mutation_item_value(key, value) + '\n'
+
         response = response + '}'
         self.logger.debug('Value declaration part of query: {0}'
                           .format(response))
@@ -149,6 +157,10 @@ class BasicGraphqlAdapter:
         item_type = type(item[1])
         item_name = item[0]
         item_value = item[1]
+
+        if not item_name in fields_description:
+            return None, None
+
         default_value = fields_description[item[0]].default
 
         if not item_value and \
@@ -179,21 +191,25 @@ class BasicGraphqlAdapter:
 
     def get_object_attribute_list(self, entity):
         self.logger.info('Mount entity attribute list')
+        self.logger.info('BasicGraphqlAdapter.get_object_attribute_list -> Entrando')
         attributes = inspect.getmembers(entity,
-                                        lambda a: not(inspect.isroutine(a)))
+                                        lambda a: not (inspect.isroutine(a)))
         fields_description = entity.Schema._declared_fields
         filtered_attributes = [a for a in attributes
-                               if not(a[0].startswith('_'))
-                               and not(a[0].endswith('_'))
-                               and not(a[0].startswith('__')
-                                       and a[0].endswith('__'))]
+                               if not (a[0].startswith('_'))
+                               and not (a[0].endswith('_'))
+                               and not (a[0].startswith('__')
+                                        and a[0].endswith('__'))]
         result = dict()
         for item in filtered_attributes:
-            item_type = type(item[1])
             item_name = item[0]
+            item_type = type(item[1])
+            item_value = item[1]
 
             if item_type == marshmallow.schema.SchemaMeta or \
-                    isinstance(item[1], BasicGraphqlAdapter):
+                    isinstance(item[1], BasicGraphqlAdapter) or \
+                    item_name == 'adapter':
+                # Sim, se o nome é 'adapter', eu pulo fora
                 continue
 
             item_info, item_value = self._process_attribute_list_item(
