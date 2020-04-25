@@ -204,12 +204,10 @@ class BasicGraphqlAdapter:
         for item in filtered_attributes:
             item_name = item[0]
             item_type = type(item[1])
-            item_value = item[1]
 
             if item_type == marshmallow.schema.SchemaMeta or \
                     isinstance(item[1], BasicGraphqlAdapter) or \
                     item_name == 'adapter':
-                # Sim, se o nome é 'adapter', eu pulo fora
                 continue
 
             item_info, item_value = self._process_attribute_list_item(
