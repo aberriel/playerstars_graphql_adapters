@@ -22,7 +22,7 @@ class Mutation:
                  api_key,
                  aws_region,
                  logger=None):
-        self.mutation_name = mutation_name
+        self._mutation_name = mutation_name
         self.attribute_description_list = attribute_description_list
         self.api_id = api_id
         self.api_key = api_key
@@ -32,6 +32,10 @@ class Mutation:
     @property
     def logger(self):
         return self._logger
+
+    @property
+    def mutation_name(self):
+        return self._mutation_name
 
     def _process_item_value_for_mutation(self, item_value):
         if isinstance(item_value, datetime):
@@ -88,8 +92,8 @@ class Mutation:
                     %s (input: %s)
                     %s
                }
-          ''' % (self.mutation_name.capitalize(),
-                 self.mutation_name,
+          ''' % (self._mutation_name.capitalize(),
+                 self._mutation_name,
                  part_1,
                  part_2)
         self.logger.info('Mutation query: {0}'.format(mutation_query))
@@ -191,7 +195,7 @@ class BasicGraphqlAdapter:
 
     def get_object_attribute_list(self, entity):
         self.logger.info('Mount entity attribute list')
-        self.logger.info('BasicGraphqlAdapter.get_object_attribute_list -> Entrando')
+        self.logger.debug('BasicGraphqlAdapter.get_object_attribute_list -> Entrando')
         attributes = inspect.getmembers(entity,
                                         lambda a: not (inspect.isroutine(a)))
         fields_description = entity.Schema._declared_fields
@@ -218,23 +222,6 @@ class BasicGraphqlAdapter:
 
         return result
 
-    def search(self, d, key, default=None):
-        """Return a value corresponding to the specified key in the (possibly
-        nested) dictionary d. If there is no item with that key, return
-        default.
-        """
-        stack = [iter(d.items())]
-        while stack:
-            for k, v in stack[-1]:
-                if isinstance(v, dict):
-                    stack.append(iter(v.items()))
-                    break
-                elif k == key:
-                    return v or default
-            else:
-                stack.pop()
-        return default
-
     def save(self, object_to_save, exec_update=False):
         object_attribute_description_list = \
             self.get_object_attribute_list(object_to_save)
@@ -247,7 +234,17 @@ class BasicGraphqlAdapter:
             aws_region=self.aws_region)
         self.logger.debug('Saving object')
         mutation_response = mutation.submit()
-        return self.search(mutation_response, 'entity_id')
+
+        mutation_name = mutation.mutation_name
+        mutation_response_info = mutation_response['data'][mutation_name]
+
+        if not mutation_response_info:
+            error_info = mutation_response['errors'][0]
+            raise Exception("An error of type {0} occurred: {1}"
+                            .format(error_info['errorType'],
+                                    error_info['message']))
+
+        return mutation_response_info['entity_id']
 
     def delete(self, entity_id):
         raise NotImplementedError('Not implemented yet')
