@@ -194,16 +194,13 @@ class BasicGraphqlAdapter:
         return item_info, item_value
 
     def get_object_attribute_list(self, entity):
-        self.logger.info('Mount entity attribute list')
-        self.logger.debug('BasicGraphqlAdapter.get_object_attribute_list -> Entrando')
+        self.logger.debug('Mount entity attribute list')
         attributes = inspect.getmembers(entity,
                                         lambda a: not (inspect.isroutine(a)))
         fields_description = entity.Schema._declared_fields
         filtered_attributes = [a for a in attributes
                                if not (a[0].startswith('_'))
-                               and not (a[0].endswith('_'))
-                               and not (a[0].startswith('__')
-                                        and a[0].endswith('__'))]
+                               and not (a[0].endswith('_'))]
         result = dict()
         for item in filtered_attributes:
             item_name = item[0]
