@@ -1,10 +1,10 @@
 from datetime import datetime
 from enum import Enum
 from marshmallow import fields
+from marshmallow_enum import EnumField
 from playerstars_domain import (
     BasicEntity,
     BasicValue)
-from playerstars_domain.utils.enum_field import EnumField
 
 
 class ContactType(Enum):
