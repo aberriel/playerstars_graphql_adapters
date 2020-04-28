@@ -75,7 +75,7 @@ submit_mutation_response_error = {
             },
             'errorType': 'DynamoDB:ConditionalCheckFailedException',
             'errorInfo': None,
-            'locations': [{ 'line': 3, 'column': 17, 'sourceName': None }],
+            'locations': [{'line': 3, 'column': 17, 'sourceName': None}],
             'message': 'The conditional request failed (Service: '
                        'AmazonDynamoDBv2; Status Code: 400; Error Code: '
                        'ConditionalCheckFailedException; Request ID: '
@@ -141,7 +141,8 @@ def test_save(client, resource, app_sync_execute):
     assert save_result == 'person123'
 
 
-@patch.object(AppSyncClient, 'execute', return_value=submit_mutation_response_error)
+@patch.object(AppSyncClient, 'execute',
+              return_value=submit_mutation_response_error)
 @patch('boto3.resource')
 @patch('boto3.client')
 def test_save_with_error(client, resource, app_sync_execute):
