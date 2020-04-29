@@ -1,4 +1,5 @@
 from appsyncclient import AppSyncClient
+from datetime import datetime
 from playerstars_graphql_adapters import (
     BasicGraphqlAdapter,
     Mutation)
@@ -12,7 +13,6 @@ from tests.basic_adapter_utils import (
     person_attribute_list,
     person_creation_datetime,
     Telephone)
-from datetime import datetime
 from unittest.mock import patch
 
 
@@ -42,7 +42,7 @@ def make_person_data(name: str = 'Anselmo Lira',
 
 submit_mutation_response = {
     'data': {
-        'create_person': {
+        'createPerson': {
             'entity_id': 'person123',
             'name': 'Anselmo Lira',
             'contact_type': 'client',
@@ -54,6 +54,34 @@ submit_mutation_response = {
             }
         }
     }
+}
+
+
+submit_mutation_response_error = {
+    'data': {'createPerson': None},
+    'errors': [
+        {
+            'path': ['createPerson'],
+            'data': {
+                'entity_id': 'person123',
+                'name': 'Anselmo Lira',
+                'contact_type': 'client',
+                'creation_datetime': '2020-04-13T15:42:06.88967',
+                'telephone': {
+                    'country_code': '55',
+                    'local_code': '21',
+                    'number': '99144-1522'
+                }
+            },
+            'errorType': 'DynamoDB:ConditionalCheckFailedException',
+            'errorInfo': None,
+            'locations': [{'line': 3, 'column': 17, 'sourceName': None}],
+            'message': 'The conditional request failed (Service: '
+                       'AmazonDynamoDBv2; Status Code: 400; Error Code: '
+                       'ConditionalCheckFailedException; Request ID: '
+                       'MI11S9F1MAI55L2FVFV15SJHN3VV4KQNSO5AEMVJF66Q9ASUAAJG)'
+        }
+    ]
 }
 
 
@@ -93,80 +121,18 @@ def test_delete_data_mutation():
     assert basic_adapter.delete_data_mutation == 'deleteObject'
 
 
-def test_search():
-    basic_adapter = BasicGraphqlAdapter(
-        api_id=api_id,
-        api_key=api_key,
-        aws_region=aws_region,
-        object_name='Object')
-    person_json = make_person_data().to_json()
-    search_result = basic_adapter.search(person_json, 'entity_id')
-    assert search_result
-    assert search_result == 'person123'
-
-
-def test_search_none_attribute_with_default():
-    basic_adapter = BasicGraphqlAdapter(
-        api_id=api_id,
-        api_key=api_key,
-        aws_region=aws_region,
-        object_name='Object')
-    person_json = make_person_data().to_json()
-    search_result = basic_adapter.search(person_json, 'comments',
-                                         'default comment')
-    assert search_result
-    assert search_result == 'default comment'
-
-
-def test_search_none_attribute_without_default():
-    basic_adapter = BasicGraphqlAdapter(
-        api_id=api_id,
-        api_key=api_key,
-        aws_region=aws_region,
-        object_name='Object')
-    person_json = make_person_data().to_json()
-    search_result = basic_adapter.search(person_json, 'comments')
-    assert not search_result
-
-
 person_birthday = datetime(1986, 12, 16)
-
-
-def test_search_unknow_attribute_with_default():
-    basic_adapter = BasicGraphqlAdapter(
-        api_id=api_id,
-        api_key=api_key,
-        aws_region=aws_region,
-        object_name='Object')
-    person_json = make_person_data().to_json()
-    search_result = basic_adapter.search(person_json,
-                                         'birthday', person_birthday)
-    assert search_result
-    assert search_result == person_birthday
-
-
-def test_search_unknow_attribute_without_default():
-    basic_adapter = BasicGraphqlAdapter(
-        api_id=api_id,
-        api_key=api_key,
-        aws_region=aws_region,
-        object_name='Object')
-    person_json = make_person_data().to_json()
-    search_result = basic_adapter.search(person_json, 'birthday')
-    assert not search_result
 
 
 @patch.object(AppSyncClient, 'execute', return_value=submit_mutation_response)
 @patch('boto3.resource')
 @patch('boto3.client')
-def test_save(boto_client,
-              boto_resource,
-              app_sync_execute):
+def test_save(client, resource, app_sync_execute):
     basic_adapter = BasicGraphqlAdapter(
         api_id=api_id,
         api_key=api_key,
         aws_region=aws_region,
-        object_name='Object')
+        object_name='Person')
     person_data = make_person_data()
     person_data.set_adapter(basic_adapter)
 
@@ -175,12 +141,31 @@ def test_save(boto_client,
     assert save_result == 'person123'
 
 
+@patch.object(AppSyncClient, 'execute',
+              return_value=submit_mutation_response_error)
+@patch('boto3.resource')
+@patch('boto3.client')
+def test_save_with_error(client, resource, app_sync_execute):
+    basic_adapter = BasicGraphqlAdapter(
+        api_id=api_id,
+        api_key=api_key,
+        aws_region=aws_region,
+        object_name='Person')
+    person_data = make_person_data()
+    person_data.set_adapter(basic_adapter)
+
+    with raises(Exception) as exc:
+        basic_adapter.save(person_data)
+    assert "An error of type DynamoDB:ConditionalCheckFailedException " \
+           "occurred:" in str(exc.value)
+
+
 def test_delete():
     basic_adapter = BasicGraphqlAdapter(
         api_id=api_id,
         api_key=api_key,
         aws_region=aws_region,
-        object_name='Object')
+        object_name='Person')
     with raises(NotImplementedError) as exc:
         basic_adapter.delete('obj123')
     assert 'Not implemented yet' in str(exc.value)
@@ -192,7 +177,7 @@ def test_get_attribute_list():
         api_id=api_id,
         api_key=api_key,
         aws_region=aws_region,
-        object_name='Object')
+        object_name='Person')
     person_data.set_adapter(basic_adapter)
     attribute_list = basic_adapter.get_object_attribute_list(person_data)
 
@@ -214,7 +199,7 @@ def test_get_attribute_list_raise_required_field():
         api_id=api_id,
         api_key=api_key,
         aws_region=aws_region,
-        object_name='Object')
+        object_name='Person')
     person_data.set_adapter(basic_adapter)
 
     with raises(Exception) as exc:
@@ -227,7 +212,7 @@ def test_list_all():
         api_id=api_id,
         api_key=api_key,
         aws_region=aws_region,
-        object_name='Object')
+        object_name='Person')
     with raises(NotImplementedError) as exc:
         basic_adapter.list_all()
     assert 'Not implemented yet' in str(exc.value)
@@ -238,7 +223,7 @@ def test_get_by_id():
         api_id=api_id,
         api_key=api_key,
         aws_region=aws_region,
-        object_name='Object')
+        object_name='Person')
     with raises(NotImplementedError) as exc:
         basic_adapter.get_by_id('obj123')
     assert 'Not implemented yet' in str(exc.value)

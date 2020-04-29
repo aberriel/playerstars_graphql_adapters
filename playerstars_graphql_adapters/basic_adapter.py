@@ -22,7 +22,7 @@ class Mutation:
                  api_key,
                  aws_region,
                  logger=None):
-        self.mutation_name = mutation_name
+        self._mutation_name = mutation_name
         self.attribute_description_list = attribute_description_list
         self.api_id = api_id
         self.api_key = api_key
@@ -33,25 +33,37 @@ class Mutation:
     def logger(self):
         return self._logger
 
+    @property
+    def mutation_name(self):
+        return self._mutation_name
+
     def _process_item_value_for_mutation(self, item_value):
         if isinstance(item_value, datetime):
             return item_value.strftime('%Y-%m-%dT%H:%M:%S.%f')
         elif isinstance(item_value, Enum):
             return item_value.value
+        elif isinstance(item_value, bool):
+            return 'true' if item_value else 'false'
         return item_value
+
+    def get_mutation_item_value(self, item_key, item_value):
+        if item_value['type'] == bool:
+            return '{0}: {1}'.format(item_key, self._process_item_value_for_mutation(item_value['value']))
+        if item_value['type'] == int:
+            return '{0}: {1}'.format(item_key, str(item_value['value']))
+        return '{0}: "{1}"'.format(item_key, self._process_item_value_for_mutation(item_value['value']))
 
     def mount_value_declaration_part(self, attribute_description_list):
         self.logger.debug('Mounting value declaration part of mutation query')
         response = '{\n'
         for key, value in attribute_description_list.items():
             if value['is_custom']:
-                response = response + '{0}: {1}\n'\
+                response = response + '{0}: {1}\n' \
                     .format(key,
                             self.mount_value_declaration_part(value['value']))
             else:
-                response = response + '{0}: "{1}"\n'.format(
-                    key,
-                    self._process_item_value_for_mutation(value['value']))
+                response = response + self.get_mutation_item_value(key, value) + '\n'
+
         response = response + '}'
         self.logger.debug('Value declaration part of query: {0}'
                           .format(response))
@@ -80,8 +92,8 @@ class Mutation:
                     %s (input: %s)
                     %s
                }
-          ''' % (self.mutation_name.capitalize(),
-                 self.mutation_name,
+          ''' % (self._mutation_name.capitalize(),
+                 self._mutation_name,
                  part_1,
                  part_2)
         self.logger.info('Mutation query: {0}'.format(mutation_query))
@@ -149,6 +161,10 @@ class BasicGraphqlAdapter:
         item_type = type(item[1])
         item_name = item[0]
         item_value = item[1]
+
+        if not item_name in fields_description:
+            return None, None
+
         default_value = fields_description[item[0]].default
 
         if not item_value and \
@@ -178,22 +194,21 @@ class BasicGraphqlAdapter:
         return item_info, item_value
 
     def get_object_attribute_list(self, entity):
-        self.logger.info('Mount entity attribute list')
+        self.logger.debug('Mount entity attribute list')
         attributes = inspect.getmembers(entity,
-                                        lambda a: not(inspect.isroutine(a)))
+                                        lambda a: not (inspect.isroutine(a)))
         fields_description = entity.Schema._declared_fields
         filtered_attributes = [a for a in attributes
-                               if not(a[0].startswith('_'))
-                               and not(a[0].endswith('_'))
-                               and not(a[0].startswith('__')
-                                       and a[0].endswith('__'))]
+                               if not (a[0].startswith('_'))
+                               and not (a[0].endswith('_'))]
         result = dict()
         for item in filtered_attributes:
-            item_type = type(item[1])
             item_name = item[0]
+            item_type = type(item[1])
 
             if item_type == marshmallow.schema.SchemaMeta or \
-                    isinstance(item[1], BasicGraphqlAdapter):
+                    isinstance(item[1], BasicGraphqlAdapter) or \
+                    item_name == 'adapter':
                 continue
 
             item_info, item_value = self._process_attribute_list_item(
@@ -203,23 +218,6 @@ class BasicGraphqlAdapter:
                 result[item_name] = item_info
 
         return result
-
-    def search(self, d, key, default=None):
-        """Return a value corresponding to the specified key in the (possibly
-        nested) dictionary d. If there is no item with that key, return
-        default.
-        """
-        stack = [iter(d.items())]
-        while stack:
-            for k, v in stack[-1]:
-                if isinstance(v, dict):
-                    stack.append(iter(v.items()))
-                    break
-                elif k == key:
-                    return v or default
-            else:
-                stack.pop()
-        return default
 
     def save(self, object_to_save, exec_update=False):
         object_attribute_description_list = \
@@ -233,7 +231,17 @@ class BasicGraphqlAdapter:
             aws_region=self.aws_region)
         self.logger.debug('Saving object')
         mutation_response = mutation.submit()
-        return self.search(mutation_response, 'entity_id')
+
+        mutation_name = mutation.mutation_name
+        mutation_response_info = mutation_response['data'][mutation_name]
+
+        if not mutation_response_info:
+            error_info = mutation_response['errors'][0]
+            raise Exception("An error of type {0} occurred: {1}"
+                            .format(error_info['errorType'],
+                                    error_info['message']))
+
+        return mutation_response_info['entity_id']
 
     def delete(self, entity_id):
         raise NotImplementedError('Not implemented yet')
