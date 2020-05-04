@@ -1,0 +1,955 @@
+type TeamMember {
+	entity_id: String!
+	member_type: String!
+	bet_amount: Int
+	player: PlayerStg
+	association_date: String
+	status: String
+}
+
+type ConsoleDev {
+	entity_id: String!
+	logo_path: String
+	name: String
+	games: [Game]
+}
+
+type ConsoleDevConnection {
+	items: [ConsoleDev]
+	nextToken: String
+}
+
+input ConsoleInput {
+	entity_id: String!
+	logo_path: String
+	name: String
+	games: [GameInput]
+}
+
+type ConsoleStg {
+	entity_id: String!
+	logo_path: String
+	name: String
+	games: [Game]
+}
+
+type ConsoleStgConnection {
+	items: [ConsoleStg]
+	nextToken: String
+}
+
+input CreateConsoleDevInput {
+	entity_id: String!
+}
+
+input CreateConsoleStgInput {
+	entity_id: String!
+}
+
+input CreateDuelChatInput {
+	entity_id: String!
+	duel_id: String
+	message: String
+	message_timestamp: String
+	sender_id: String
+	sender_nickname: String
+	profile_image: String
+	created_at: String
+}
+
+input CreateDuelDevInput {
+	entity_id: String!
+	console: ConsoleInput
+	game: GameInput
+	challenger: String!
+	challenged: String
+	challenged_accept: Boolean
+	championship: String
+	championship_level: Int
+	star_type: String
+	bet_size: Int
+	total_reward: Int
+	creation_datetime: String
+	time_send_invitation: String
+	time_start: String
+	time_finish: String
+	time_cancel: String
+	status: String!
+	member_type: String!
+	duel_type: String!
+	winner: String
+	minimum_time: String
+	maximum_time: String
+	challenger_last_duel: String
+	challenged_last_duel: String
+	challenger_confirmation: Boolean
+	challenged_confirmation: Boolean
+	participants: Int
+	response_time: Int
+	result_time: Int
+}
+
+input CreateDuelStgInput {
+	entity_id: String!
+	challenger: String!
+	challenged: String
+	challenged_accept: Boolean
+	championship: String
+	championship_level: Int
+	star_type: String
+	bet_size: Int
+	total_reward: Int
+	creation_datetime: String
+	time_send_invitation: String
+	time_start: String
+	time_finish: String
+	time_cancel: String
+	status: String!
+	member_type: String!
+	duel_type: String!
+	winner: String
+	minimum_time: String
+	maximum_time: String
+	challenger_last_duel: String
+	challenged_last_duel: String
+	challenger_confirmation: Boolean
+	challenged_confirmation: Boolean
+	participants: Int
+	response_time: Int
+	result_time: Int
+}
+
+input CreateNotificationDevInput {
+	entity_id: String!
+	creation_datetime: String
+	player_id: String
+	status: String
+	duel_id: String
+	team_id: String
+	notification_type: String
+	notification_image: String
+	notification_complement: String
+}
+
+input CreateNotificationStgInput {
+	entity_id: String!
+	creation_datetime: String
+	player_id: String
+	status: String
+	duel_id: String
+	team_id: String
+	notification_type: String
+	notification_image: String
+	notification_complement: String
+}
+
+input CreatePlayerDevInput {
+	entity_id: String!
+}
+
+input CreatePlayerStgInput {
+	entity_id: String!
+}
+
+input TeamMemberInput {
+    player_id: String
+    status: String
+    association_date: String!
+    bet_amount: Int
+    member_type: String!
+    last_status_change_datetime: String
+}
+
+input CreateTeamDevInput {
+	entity_id: String!
+	name: String
+	captain: TeamMemberInput
+	victories: Int
+	logo_path: String
+	console_id: String
+	game_id: String
+	members: [TeamMemberInput]
+	description: String
+	creation_datetime: String
+}
+
+input CreateTeamStgInput {
+	entity_id: String!
+	name: String
+	captain: TeamMemberInput
+	victories: Int
+	logo_path: String
+	console_id: String
+	game_id: String
+	members: [TeamMemberInput]
+	description: String
+	creation_datetime: String
+}
+
+input DeleteConsoleDevInput {
+	entity_id: String!
+}
+
+input DeleteConsoleStgInput {
+	entity_id: String!
+}
+
+input DeleteDuelChatInput {
+	entity_id: String!
+}
+
+input DeleteDuelDevInput {
+	entity_id: String!
+}
+
+input DeleteDuelStgInput {
+	entity_id: String!
+}
+
+input DeleteNotificationDevInput {
+	entity_id: String!
+}
+
+input DeleteNotificationStgInput {
+	entity_id: String!
+}
+
+input DeletePlayerDevInput {
+	entity_id: String!
+}
+
+input DeletePlayerStgInput {
+	entity_id: String!
+}
+
+input DeleteTeamDevInput {
+	entity_id: String!
+}
+
+input DeleteTeamStgInput {
+	entity_id: String!
+}
+
+type DuelChat {
+	entity_id: String!
+	duel_id: String
+	message: String
+	message_timestamp: String
+	sender_id: String
+	sender_nickname: String
+	profile_image: String
+	created_at: String
+}
+
+type DuelChatConnection {
+	items: [DuelChat]
+	nextToken: String
+}
+
+type DuelDev {
+	entity_id: String!
+	bet_size: Int
+	total_reward: Int
+	participants: Int
+	challenger: String!
+	challenged: String
+	challenged_accept: Boolean
+	challenger_last_duel: String
+	challenged_last_duel: String
+	challenger_confirmation: Boolean
+	challenged_confirmation: Boolean
+	challenger_duel_result: DuelResult
+	challenged_duel_result: DuelResult
+	championship: String
+	championship_level: Int
+	console: ConsoleStg
+	game: Game
+	maximum_time: String
+	minimum_time: String
+	star_type: String
+	member_type: String
+	duel_type: String
+	status: String
+	creation_datetime: String
+	time_start: String
+	time_send_invitation: String
+	time_finish: String
+	time_cancel: String
+	response_time: Int
+	result_time: Int
+	winner: String
+}
+
+type DuelDevConnection {
+	items: [DuelDev]
+	nextToken: String
+}
+
+type DuelResult {
+	result: String
+	submission_datetime: String
+	result_image: String
+}
+
+type DuelStg {
+	entity_id: String!
+	bet_size: Int
+	total_reward: Int
+	participants: Int
+	challenger: String!
+	challenged: String
+	challenged_accept: Boolean
+	challenger_last_duel: String
+	challenged_last_duel: String
+	challenger_confirmation: Boolean
+	challenged_confirmation: Boolean
+	challenger_duel_result: DuelResult
+	challenged_duel_result: DuelResult
+	championship: String
+	championship_level: Int
+	console: ConsoleStg
+	game: Game
+	maximum_time: String
+	minimum_time: String
+	star_type: String
+	member_type: String
+	duel_type: String
+	status: String
+	creation_datetime: String
+	time_start: String
+	time_send_invitation: String
+	time_finish: String
+	time_cancel: String
+	response_time: Int
+	result_time: Int
+	winner: String
+}
+
+type DuelStgConnection {
+	items: [DuelStg]
+	nextToken: String
+}
+
+type Game {
+	entity_id: String!
+	logo_path: String
+	name: String
+}
+
+input GameInput {
+	entity_id: String!
+	logo_path: String
+	name: String
+}
+
+input ModelBooleanFilterInput {
+	ne: Boolean
+	eq: Boolean
+}
+
+input ModelFloatFilterInput {
+	ne: Float
+	eq: Float
+	le: Float
+	lt: Float
+	ge: Float
+	gt: Float
+	contains: Float
+	notContains: Float
+	between: [Float]
+}
+
+input ModelIDFilterInput {
+	ne: ID
+	eq: ID
+	le: ID
+	lt: ID
+	ge: ID
+	gt: ID
+	contains: ID
+	notContains: ID
+	between: [ID]
+	beginsWith: ID
+}
+
+input ModelIntFilterInput {
+	ne: Int
+	eq: Int
+	le: Int
+	lt: Int
+	ge: Int
+	gt: Int
+	contains: Int
+	notContains: Int
+	between: [Int]
+}
+
+enum ModelSortDirection {
+	ASC
+	DESC
+}
+
+input ModelStringFilterInput {
+	ne: String
+	eq: String
+	le: String
+	lt: String
+	ge: String
+	gt: String
+	contains: String
+	notContains: String
+	between: [String]
+	beginsWith: String
+}
+
+type Mutation {
+	createDuelChat(input: CreateDuelChatInput!): DuelChat
+	createTeamStg(input: CreateTeamStgInput!): TeamStg
+	updateTeamStg(input: UpdateTeamStgInput!): TeamStg
+	deleteTeamStg(input: DeleteTeamStgInput!): TeamStg
+	createNotificationStg(input: CreateNotificationStgInput!): NotificationStg
+	updateNotificationStg(input: UpdateNotificationStgInput!): NotificationStg
+	deleteNotificationStg(input: DeleteNotificationStgInput!): NotificationStg
+	createPlayerStg(input: CreatePlayerStgInput!): PlayerStg
+	updatePlayerStg(input: UpdatePlayerStgInput!): PlayerStg
+	deletePlayerStg(input: DeletePlayerStgInput!): PlayerStg
+	createDuelStg(input: CreateDuelStgInput!): DuelStg
+	updateDuelStg(input: UpdateDuelStgInput!): DuelStg
+	deleteDuelStg(input: DeleteDuelStgInput!): DuelStg
+	createConsoleStg(input: CreateConsoleStgInput!): ConsoleStg
+	updateConsoleStg(input: UpdateConsoleStgInput!): ConsoleStg
+	deleteConsoleStg(input: DeleteConsoleStgInput!): ConsoleStg
+	createDuelDev(input: CreateDuelDevInput!): DuelDev
+	updateDuelDev(input: UpdateDuelDevInput!): DuelDev
+	deleteDuelDev(input: DeleteDuelDevInput!): DuelDev
+	createConsoleDev(input: CreateConsoleDevInput!): ConsoleDev
+	updateConsoleDev(input: UpdateConsoleDevInput!): ConsoleDev
+	deleteConsoleDev(input: DeleteConsoleDevInput!): ConsoleDev
+	createNotificationDev(input: CreateNotificationDevInput!): NotificationDev
+	updateNotificationDev(input: UpdateNotificationDevInput!): NotificationDev
+	deleteNotificationDev(input: DeleteNotificationDevInput!): NotificationDev
+	createPlayerDev(input: CreatePlayerDevInput!): PlayerDev
+	updatePlayerDev(input: UpdatePlayerDevInput!): PlayerDev
+	deletePlayerDev(input: DeletePlayerDevInput!): PlayerDev
+	createTeamDev(input: CreateTeamDevInput!): TeamDev
+	updateTeamDev(input: UpdateTeamDevInput!): TeamDev
+	deleteTeamDev(input: DeleteTeamDevInput!): TeamDev
+}
+
+type NotificationDev {
+	entity_id: String!
+	creation_datetime: String
+	player_id: String
+	status: String
+	duel_id: String
+	team_id: String
+	notification_type: String
+	notification_image: String
+	notification_complement: String
+}
+
+type NotificationDevConnection {
+	items: [NotificationDev]
+	nextToken: String
+}
+
+type NotificationStg {
+	entity_id: String!
+	creation_datetime: String
+	player_id: String
+	status: String
+	duel_id: String
+	team_id: String
+	notification_type: String
+	notification_image: String
+	notification_complement: String
+}
+
+type NotificationStgConnection {
+	items: [NotificationStg]
+	nextToken: String
+}
+
+type GamePoints {
+    game_id: String!
+    victories: Int
+}
+
+type PlayerConsoles {
+    console_id: String!
+    tag_name: String
+    game_points: [GamePoints]
+}
+
+type StarTransaction {
+    value: Int
+    source_id: String
+    operation_type: String
+    coin_type: String
+    source: String
+    operation_date: String
+}
+
+type StarReserve {
+    event_id: String!
+    star_type: String!
+    star_value: Int
+}
+
+type ProductPurchased {
+    description: String
+    price: Int
+    star_value: Int
+    star_type: String
+    duration: Int
+}
+
+type Payment {
+    code: String
+    payment_datetime: String
+    payment_type: String
+}
+
+type Purchase {
+    product: ProductPurchased
+    payment: Payment
+    purchase_datetime: String
+    purchase_type: String
+}
+
+type PlayerDev {
+	entity_id: String!
+	user: User
+	consoles: [PlayerConsoles]
+	favorites: [String]
+	points: Int
+	red_star_balance: Int
+	golden_star_balance: Int
+	player_status: String
+	states_regions: [String]
+	countries_regions: [String]
+	star_transactions: [StarTransaction]
+	purchases: [Purchase]
+	star_reservations: [StarReserve]
+	terms: Boolean
+	is_blocked: Boolean
+	is_admin: Boolean
+}
+
+type PlayerDevConnection {
+	items: [PlayerDev]
+	nextToken: String
+}
+
+type PlayerStg {
+	entity_id: String!
+	user: User
+	consoles: [PlayerConsoles]
+	favorites: [String]
+	points: Int
+	red_star_balance: Int
+	golden_star_balance: Int
+	player_status: String
+	states_regions: [String]
+	countries_regions: [String]
+	star_transactions: [StarTransaction]
+	purchases: [Purchase]
+	star_reservations: [StarReserve]
+	terms: Boolean
+	is_blocked: Boolean
+	is_admin: Boolean
+}
+
+type PlayerStgConnection {
+	items: [PlayerStg]
+	nextToken: String
+}
+
+type Query {
+	listDuelChats(filter: TableDuelChatFilterInput, limit: Int, nextToken: String): DuelChatConnection
+	getTeamStg(entity_id: String!): TeamStg
+	listTeamStgs(filter: TableTeamStgFilterInput, limit: Int, nextToken: String): TeamStgConnection
+	getNotificationStg(entity_id: String!): NotificationStg
+	listNotificationStgs(filter: TableNotificationStgFilterInput, limit: Int, nextToken: String): NotificationStgConnection
+	getPlayerStg(entity_id: String!): PlayerStg
+	listPlayerStgs(filter: TablePlayerStgFilterInput, limit: Int, nextToken: String): PlayerStgConnection
+	getDuelStg(entity_id: String!): DuelStg
+	listDuelStgs(filter: TableDuelStgFilterInput, limit: Int, nextToken: String): DuelStgConnection
+	getConsoleStg(entity_id: String!): ConsoleStg
+	listConsoleStgs(filter: TableConsoleStgFilterInput, limit: Int, nextToken: String): ConsoleStgConnection
+	getDuelDev(entity_id: String!): DuelDev
+	listDuelDevs(filter: TableDuelDevFilterInput, limit: Int, nextToken: String): DuelDevConnection
+	getConsoleDev(entity_id: String!): ConsoleDev
+	listConsoleDevs(filter: TableConsoleDevFilterInput, limit: Int, nextToken: String): ConsoleDevConnection
+	getNotificationDev(entity_id: String!): NotificationDev
+	listNotificationDevs(filter: TableNotificationDevFilterInput, limit: Int, nextToken: String): NotificationDevConnection
+	getPlayerDev(entity_id: String!): PlayerDev
+	listPlayerDevs(filter: TablePlayerDevFilterInput, limit: Int, nextToken: String): PlayerDevConnection
+	getTeamDev(entity_id: String!): TeamDev
+	listTeamDevs(filter: TableTeamDevFilterInput, limit: Int, nextToken: String): TeamDevConnection
+}
+
+type Subscription {
+	onCreateDuelChat(duel_id: String): DuelChat
+		@aws_subscribe(mutations: ["createDuelChat"])
+	onCreateTeamStg(entity_id: String): TeamStg
+		@aws_subscribe(mutations: ["createTeamStg"])
+	onUpdateTeamStg(entity_id: String): TeamStg
+		@aws_subscribe(mutations: ["updateTeamStg"])
+	onDeleteTeamStg(entity_id: String): TeamStg
+		@aws_subscribe(mutations: ["deleteTeamStg"])
+	onCreateNotificationStg(player_id: String): NotificationStg
+		@aws_subscribe(mutations: ["createNotificationStg"])
+	onUpdateNotificationStg(entity_id: String): NotificationStg
+		@aws_subscribe(mutations: ["updateNotificationStg"])
+	onDeleteNotificationStg(entity_id: String): NotificationStg
+		@aws_subscribe(mutations: ["deleteNotificationStg"])
+	onCreatePlayerStg(entity_id: String): PlayerStg
+		@aws_subscribe(mutations: ["createPlayerStg"])
+	onUpdatePlayerStg(entity_id: String): PlayerStg
+		@aws_subscribe(mutations: ["updatePlayerStg"])
+	onDeletePlayerStg(entity_id: String): PlayerStg
+		@aws_subscribe(mutations: ["deletePlayerStg"])
+	onCreateDuelStg(entity_id: String): DuelStg
+		@aws_subscribe(mutations: ["createDuelStg"])
+	onUpdateDuelStg(entity_id: String): DuelStg
+		@aws_subscribe(mutations: ["updateDuelStg"])
+	onDeleteDuelStg(entity_id: String): DuelStg
+		@aws_subscribe(mutations: ["deleteDuelStg"])
+	onCreateConsoleStg(entity_id: String): ConsoleStg
+		@aws_subscribe(mutations: ["createConsoleStg"])
+	onUpdateConsoleStg(entity_id: String): ConsoleStg
+		@aws_subscribe(mutations: ["updateConsoleStg"])
+	onDeleteConsoleStg(entity_id: String): ConsoleStg
+		@aws_subscribe(mutations: ["deleteConsoleStg"])
+	onCreateDuelDev(entity_id: String): DuelDev
+		@aws_subscribe(mutations: ["createDuelDev"])
+	onUpdateDuelDev(entity_id: String): DuelDev
+		@aws_subscribe(mutations: ["updateDuelDev"])
+	onDeleteDuelDev(entity_id: String): DuelDev
+		@aws_subscribe(mutations: ["deleteDuelDev"])
+	onCreateConsoleDev(entity_id: String): ConsoleDev
+		@aws_subscribe(mutations: ["createConsoleDev"])
+	onUpdateConsoleDev(entity_id: String): ConsoleDev
+		@aws_subscribe(mutations: ["updateConsoleDev"])
+	onDeleteConsoleDev(entity_id: String): ConsoleDev
+		@aws_subscribe(mutations: ["deleteConsoleDev"])
+	onCreateNotificationDev(entity_id: String): NotificationDev
+		@aws_subscribe(mutations: ["createNotificationDev"])
+	onUpdateNotificationDev(entity_id: String): NotificationDev
+		@aws_subscribe(mutations: ["updateNotificationDev"])
+	onDeleteNotificationDev(entity_id: String): NotificationDev
+		@aws_subscribe(mutations: ["deleteNotificationDev"])
+	onCreatePlayerDev(entity_id: String): PlayerDev
+		@aws_subscribe(mutations: ["createPlayerDev"])
+	onUpdatePlayerDev(entity_id: String): PlayerDev
+		@aws_subscribe(mutations: ["updatePlayerDev"])
+	onDeletePlayerDev(entity_id: String): PlayerDev
+		@aws_subscribe(mutations: ["deletePlayerDev"])
+	onCreateTeamDev(entity_id: String): TeamDev
+		@aws_subscribe(mutations: ["createTeamDev"])
+	onUpdateTeamDev(entity_id: String): TeamDev
+		@aws_subscribe(mutations: ["updateTeamDev"])
+	onDeleteTeamDev(entity_id: String): TeamDev
+		@aws_subscribe(mutations: ["deleteTeamDev"])
+}
+
+input TableBooleanFilterInput {
+	ne: Boolean
+	eq: Boolean
+}
+
+input TableCaptainFilterInput {
+	player: TablePlayerStgFilterInput
+}
+
+input TableConsoleDevFilterInput {
+	entity_id: TableStringFilterInput
+}
+
+input TableConsoleStgFilterInput {
+	entity_id: TableStringFilterInput
+}
+
+input TableDuelChatFilterInput {
+	entity_id: TableStringFilterInput
+	duel_id: TableStringFilterInput
+	message: TableStringFilterInput
+	message_timestamp: TableStringFilterInput
+	sender_id: TableStringFilterInput
+	sender_nickname: TableStringFilterInput
+}
+
+input TableDuelDevFilterInput {
+	entity_id: TableStringFilterInput
+	status: TableStringFilterInput
+}
+
+input TableDuelStgFilterInput {
+	entity_id: TableStringFilterInput
+	status: TableStringFilterInput
+}
+
+input TableFloatFilterInput {
+	ne: Float
+	eq: Float
+	le: Float
+	lt: Float
+	ge: Float
+	gt: Float
+	contains: Float
+	notContains: Float
+	between: [Float]
+}
+
+input TableIDFilterInput {
+	ne: ID
+	eq: ID
+	le: ID
+	lt: ID
+	ge: ID
+	gt: ID
+	contains: ID
+	notContains: ID
+	between: [ID]
+	beginsWith: ID
+}
+
+input TableIntFilterInput {
+	ne: Int
+	eq: Int
+	le: Int
+	lt: Int
+	ge: Int
+	gt: Int
+	contains: Int
+	notContains: Int
+	between: [Int]
+}
+
+input TableMemberFilterInput {
+	player: TablePlayerStgFilterInput
+}
+
+input TableNotificationDevFilterInput {
+	entity_id: TableStringFilterInput
+}
+
+input TableNotificationStgFilterInput {
+	entity_id: TableStringFilterInput
+	player_id: TableStringFilterInput
+	status: TableStringFilterInput
+}
+
+input TablePlayerDevFilterInput {
+	entity_id: TableStringFilterInput
+}
+
+input TablePlayerStgFilterInput {
+	entity_id: TableStringFilterInput
+}
+
+input TableStringFilterInput {
+	ne: String
+	eq: String
+	le: String
+	lt: String
+	ge: String
+	gt: String
+	contains: String
+	notContains: String
+	between: [String]
+	in: [String]
+	nin: [String]
+	beginsWith: String
+}
+
+input TableTeamDevFilterInput {
+	entity_id: TableStringFilterInput
+}
+
+input TableTeamStgFilterInput {
+	entity_id: TableStringFilterInput
+	captain: TableCaptainFilterInput
+}
+
+input TableUserFilterInput {
+	nickname: TableStringFilterInput
+}
+
+type TeamDev {
+	entity_id: String!
+	name: String!
+	captain: TeamMember!
+	victories: Int
+	logo_path: String
+	console_id: String
+	game_id: String
+	members: [TeamMember]
+	description: String
+	cretion_datetime: String
+}
+
+type TeamDevConnection {
+	items: [TeamDev]
+	nextToken: String
+}
+
+type TeamStg {
+	entity_id: String!
+	name: String
+	captain: TeamMember
+	victories: Int
+	logo_path: String
+	console_id: String
+	game_id: String
+	members: [TeamMember]
+	description: String
+	creation_datetime: String
+}
+
+type TeamStgConnection {
+	items: [TeamStg]
+	nextToken: String
+}
+
+input UpdateConsoleDevInput {
+	entity_id: String!
+}
+
+input UpdateConsoleStgInput {
+	entity_id: String!
+}
+
+input UpdateDuelChatInput {
+	entity_id: String!
+	duel_id: String
+	message: String
+	message_timestamp: String
+	sender_id: String
+	sender_nickname: String
+}
+
+input UpdateDuelDevInput {
+	entity_id: String!
+	total_reward: Int
+	console: ConsoleInput
+	game: GameInput
+	challenger: String!
+	challenged: String
+	challenged_accept: Boolean
+	championship: String
+	championship_level: Int
+	star_type: String
+	bet_size: Int
+	creation_datetime: String
+	time_send_invitation: String
+	time_start: String
+	time_finish: String
+	time_cancel: String
+	status: String!
+	member_type: String!
+	duel_type: String!
+	winner: String
+	minimum_time: String
+	maximum_time: String
+	challenger_last_duel: String
+	challenged_last_duel: String
+	challenger_confirmation: Boolean
+	challenged_confirmation: Boolean
+	participants: Int
+	response_time: Int
+	result_time: Int
+}
+
+input UpdateDuelStgInput {
+	entity_id: String!
+	total_reward: Int
+	console: ConsoleInput
+	game: GameInput
+	challenger: String!
+	challenged: String
+	challenged_accept: Boolean
+	championship: String
+	championship_level: Int
+	star_type: String
+	bet_size: Int
+	creation_datetime: String
+	time_send_invitation: String
+	time_start: String
+	time_finish: String
+	time_cancel: String
+	status: String!
+	member_type: String!
+	duel_type: String!
+	winner: String
+	minimum_time: String
+	maximum_time: String
+	challenger_last_duel: String
+	challenged_last_duel: String
+	challenger_confirmation: Boolean
+	challenged_confirmation: Boolean
+	participants: Int
+	response_time: Int
+	result_time: Int
+}
+
+input UpdateNotificationDevInput {
+	entity_id: String!
+	status: String!
+	player_id: String
+	duel_id: String
+	team_id: String
+	creation_datetime: String
+	notification_type: String
+	notification_complement: String
+	notification_image: String
+}
+
+input UpdateNotificationStgInput {
+	entity_id: String!
+	status: String!
+	player_id: String
+	duel_id: String
+	team_id: String
+	creation_datetime: String
+	notification_type: String
+	notification_complement: String
+	notification_image: String
+}
+
+input UpdatePlayerDevInput {
+	entity_id: String!
+}
+
+input UpdatePlayerStgInput {
+	entity_id: String!
+}
+
+input UpdateTeamDevInput {
+	entity_id: String!
+	name: String
+}
+
+input UpdateTeamStgInput {
+	entity_id: String!
+}
+
+type User {
+	city: String
+	country: String
+	cpf: String
+	date_birth: String
+	email: String
+	name: String
+	neighborhood: String
+	nickname: String
+	phone_number: String
+	postal_code: String
+	profile_image: String
+	state: String
+	street: String
+	street_complement: String
+	street_number: String
+	address: String
+}
