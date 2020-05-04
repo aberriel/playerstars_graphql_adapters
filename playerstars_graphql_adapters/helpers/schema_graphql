@@ -1,4 +1,4 @@
-type Captain {
+type TeamMember {
 	entity_id: String!
 	member_type: String!
 	bet_amount: Int
@@ -151,12 +151,39 @@ input CreatePlayerStgInput {
 	entity_id: String!
 }
 
+input TeamMemberInput {
+    player_id: String
+    status: String
+    association_date: String!
+    bet_amount: Int
+    member_type: String!
+    last_status_change_datetime: String
+}
+
 input CreateTeamDevInput {
 	entity_id: String!
+	name: String
+	captain: TeamMemberInput
+	victories: Int
+	logo_path: String
+	console_id: String
+	game_id: String
+	members: [TeamMemberInput]
+	description: String
+	creation_datetime: String
 }
 
 input CreateTeamStgInput {
 	entity_id: String!
+	name: String
+	captain: TeamMemberInput
+	victories: Int
+	logo_path: String
+	console_id: String
+	game_id: String
+	members: [TeamMemberInput]
+	description: String
+	creation_datetime: String
 }
 
 input DeleteConsoleDevInput {
@@ -315,15 +342,6 @@ input GameInput {
 	name: String
 }
 
-type Member {
-	entity_id: String!
-	member_type: String
-	bet_amount: Int
-	player: PlayerStg
-	association_date: String
-	status: String
-}
-
 input ModelBooleanFilterInput {
 	ne: Boolean
 	eq: Boolean
@@ -452,8 +470,70 @@ type NotificationStgConnection {
 	nextToken: String
 }
 
+type GamePoints {
+    game_id: String!
+    victories: Int
+}
+
+type PlayerConsoles {
+    console_id: String!
+    tag_name: String
+    game_points: [GamePoints]
+}
+
+type StarTransaction {
+    value: Int
+    source_id: String
+    operation_type: String
+    coin_type: String
+    source: String
+    operation_date: String
+}
+
+type StarReserve {
+    event_id: String!
+    star_type: String!
+    star_value: Int
+}
+
+type ProductPurchased {
+    description: String
+    price: Int
+    star_value: Int
+    star_type: String
+    duration: Int
+}
+
+type Payment {
+    code: String
+    payment_datetime: String
+    payment_type: String
+}
+
+type Purchase {
+    product: ProductPurchased
+    payment: Payment
+    purchase_datetime: String
+    purchase_type: String
+}
+
 type PlayerDev {
 	entity_id: String!
+	user: User
+	consoles: [PlayerConsoles]
+	favorites: [String]
+	points: Int
+	red_star_balance: Int
+	golden_star_balance: Int
+	player_status: String
+	states_regions: [String]
+	countries_regions: [String]
+	star_transactions: [StarTransaction]
+	purchases: [Purchase]
+	star_reservations: [StarReserve]
+	terms: Boolean
+	is_blocked: Boolean
+	is_admin: Boolean
 }
 
 type PlayerDevConnection {
@@ -463,15 +543,21 @@ type PlayerDevConnection {
 
 type PlayerStg {
 	entity_id: String!
-	blue_star_balance: Int
+	user: User
+	consoles: [PlayerConsoles]
+	favorites: [String]
+	points: Int
+	red_star_balance: Int
 	golden_star_balance: Int
 	player_status: String
-	points: Int
+	states_regions: [String]
+	countries_regions: [String]
+	star_transactions: [StarTransaction]
+	purchases: [Purchase]
+	star_reservations: [StarReserve]
 	terms: Boolean
-	user: User
-	consoles: [ConsoleStg]
-	purchases: String
-	favorites: [String]
+	is_blocked: Boolean
+	is_admin: Boolean
 }
 
 type PlayerStgConnection {
@@ -693,12 +779,15 @@ input TableUserFilterInput {
 
 type TeamDev {
 	entity_id: String!
-	captain: Captain
-	consoles: [ConsoleStg]
-	description: String
+	name: String!
+	captain: TeamMember!
+	victories: Int
 	logo_path: String
-	name: String
-	members: [Member]
+	console_id: String
+	game_id: String
+	members: [TeamMember]
+	description: String
+	cretion_datetime: String
 }
 
 type TeamDevConnection {
@@ -708,12 +797,15 @@ type TeamDevConnection {
 
 type TeamStg {
 	entity_id: String!
-	captain: Captain
-	consoles: [ConsoleStg]
-	description: String
-	logo_path: String
 	name: String
-	members: [Member]
+	captain: TeamMember
+	victories: Int
+	logo_path: String
+	console_id: String
+	game_id: String
+	members: [TeamMember]
+	description: String
+	creation_datetime: String
 }
 
 type TeamStgConnection {
@@ -834,6 +926,7 @@ input UpdatePlayerStgInput {
 
 input UpdateTeamDevInput {
 	entity_id: String!
+	name: String
 }
 
 input UpdateTeamStgInput {
@@ -857,4 +950,14 @@ type User {
 	street_complement: String
 	street_number: String
 	address: String
+}
+
+input TableDuelDevFilterInput {
+    entity_id: TableStringFilterInput
+  status: TableStringFilterInput
+}
+
+input TableDuelStgFilterInput {
+    entity_id: TableStringFilterInput
+  status: TableStringFilterInput
 }
