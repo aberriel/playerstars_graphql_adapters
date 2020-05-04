@@ -903,6 +903,7 @@ input UpdateNotificationDevInput {
 	creation_datetime: String
 	notification_type: String
 	notification_complement: String
+	notification_image: String
 }
 
 input UpdateNotificationStgInput {
@@ -914,6 +915,7 @@ input UpdateNotificationStgInput {
 	creation_datetime: String
 	notification_type: String
 	notification_complement: String
+	notification_image: String
 }
 
 input UpdatePlayerDevInput {
