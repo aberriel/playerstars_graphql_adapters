@@ -951,13 +951,3 @@ type User {
 	street_number: String
 	address: String
 }
-
-input TableDuelDevFilterInput {
-    entity_id: TableStringFilterInput
-  status: TableStringFilterInput
-}
-
-input TableDuelStgFilterInput {
-    entity_id: TableStringFilterInput
-  status: TableStringFilterInput
-}
