@@ -1,6 +1,6 @@
 requirements = [
     'appsync-client==0.0.13',
-    'boto3==1.9.190',
+    'boto3==1.12.42',
     'marshmallow==3.5.1',
     'marshmallow-enum==1.5.1',
     'paho-mqtt==1.5.0',
