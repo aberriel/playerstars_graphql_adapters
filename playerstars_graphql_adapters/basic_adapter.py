@@ -236,7 +236,11 @@ class BasicGraphqlAdapter:
         try:
             mutation_response_info = mutation_response['data'][mutation_name]
         except KeyError as e:
-            msg = f'Mutation Response error: ' \
+            msg = f'Mutation Response have no "{e}" key: ' \
+                  f'"{mutation_response}"'
+            raise Exception(msg)
+        except ValueError as e:
+            msg = f'Mutation Response have no "data" key: ' \
                   f'"{mutation_response}"'
             raise Exception(msg)
 
