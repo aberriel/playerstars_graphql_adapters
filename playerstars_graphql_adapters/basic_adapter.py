@@ -233,7 +233,12 @@ class BasicGraphqlAdapter:
         mutation_response = mutation.submit()
 
         mutation_name = mutation.mutation_name
-        mutation_response_info = mutation_response['data'][mutation_name]
+        try:
+            mutation_response_info = mutation_response['data'][mutation_name]
+        except KeyError as e:
+            msg = f'Mutation Response error: ' \
+                  f'"{mutation_response}"'
+            raise Exception(msg)
 
         if not mutation_response_info:
             error_info = mutation_response['errors'][0]
