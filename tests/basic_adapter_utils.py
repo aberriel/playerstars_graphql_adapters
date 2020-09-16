@@ -1,10 +1,8 @@
+from clapy_basic_classes import BasicEntity, BasicValue
 from datetime import datetime
 from enum import Enum
 from marshmallow import fields
 from marshmallow_enum import EnumField
-from playerstars_domain import (
-    BasicEntity,
-    BasicValue)
 
 
 class ContactType(Enum):
@@ -95,8 +93,8 @@ person_attribute_list = {
     'entity_id': {
         'name': 'entity_id',
         'type': str,
-        'is_required': True,
-        'allow_none': False,
+        'is_required': False,
+        'allow_none': True,
         'is_custom': False,
         'value': 'person123'
     },

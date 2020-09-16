@@ -1,7 +1,7 @@
 from appsyncclient import AppSyncClient
+from clapy_basic_classes import BasicEntity, BasicValue
 from datetime import datetime
 from enum import Enum
-from playerstars_domain import BasicEntity, BasicValue
 
 import inspect
 import json
