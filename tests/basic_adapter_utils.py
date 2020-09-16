@@ -93,7 +93,7 @@ person_attribute_list = {
     'entity_id': {
         'name': 'entity_id',
         'type': str,
-        'is_required': True,
+        'is_required': False,
         'allow_none': True,
         'is_custom': False,
         'value': 'person123'
