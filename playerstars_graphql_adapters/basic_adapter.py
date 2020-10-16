@@ -39,7 +39,7 @@ class Mutation:
 
     def _process_item_value_for_mutation(self, item_value):
         if isinstance(item_value, datetime):
-            return item_value.strftime('%Y-%m-%dT%H:%M:%S.%f')
+            return item_value.isoformat()
         elif isinstance(item_value, Enum):
             return item_value.value
         elif isinstance(item_value, bool):
